@@ -1,0 +1,272 @@
+{
+	"textures": [
+		{
+			"image": "santa.png",
+			"format": "RGBA8888",
+			"size": {
+				"w": 57,
+				"h": 249
+			},
+			"scale": 1,
+			"frames": [
+				{
+					"filename": "santa9.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 52,
+						"h": 58
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 52,
+						"h": 58
+					},
+					"frame": {
+						"x": 1,
+						"y": 1,
+						"w": 52,
+						"h": 58
+					}
+				},
+				{
+					"filename": "santa10.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 52,
+						"h": 58
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 52,
+						"h": 58
+					},
+					"frame": {
+						"x": 1,
+						"y": 61,
+						"w": 52,
+						"h": 58
+					}
+				},
+				{
+					"filename": "santa11.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 52,
+						"h": 58
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 52,
+						"h": 58
+					},
+					"frame": {
+						"x": 1,
+						"y": 121,
+						"w": 52,
+						"h": 58
+					}
+				},
+				{
+					"filename": "santa7.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 23,
+						"h": 19
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 23,
+						"h": 19
+					},
+					"frame": {
+						"x": 1,
+						"y": 181,
+						"w": 23,
+						"h": 19
+					}
+				},
+				{
+					"filename": "santa6.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 22,
+						"h": 19
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 22,
+						"h": 19
+					},
+					"frame": {
+						"x": 1,
+						"y": 202,
+						"w": 22,
+						"h": 19
+					}
+				},
+				{
+					"filename": "santa0.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 14,
+						"h": 21
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 14,
+						"h": 21
+					},
+					"frame": {
+						"x": 1,
+						"y": 223,
+						"w": 14,
+						"h": 21
+					}
+				},
+				{
+					"filename": "santa1.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 14,
+						"h": 21
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 14,
+						"h": 21
+					},
+					"frame": {
+						"x": 26,
+						"y": 181,
+						"w": 14,
+						"h": 21
+					}
+				},
+				{
+					"filename": "santa2.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 14,
+						"h": 21
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 14,
+						"h": 21
+					},
+					"frame": {
+						"x": 42,
+						"y": 181,
+						"w": 14,
+						"h": 21
+					}
+				},
+				{
+					"filename": "santa3.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 14,
+						"h": 21
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 14,
+						"h": 21
+					},
+					"frame": {
+						"x": 25,
+						"y": 204,
+						"w": 14,
+						"h": 21
+					}
+				},
+				{
+					"filename": "santa4.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 14,
+						"h": 21
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 14,
+						"h": 21
+					},
+					"frame": {
+						"x": 41,
+						"y": 204,
+						"w": 14,
+						"h": 21
+					}
+				},
+				{
+					"filename": "santa5.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 14,
+						"h": 21
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 14,
+						"h": 21
+					},
+					"frame": {
+						"x": 17,
+						"y": 227,
+						"w": 14,
+						"h": 21
+					}
+				},
+				{
+					"filename": "santa8.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 16,
+						"h": 11
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 16,
+						"h": 11
+					},
+					"frame": {
+						"x": 33,
+						"y": 227,
+						"w": 16,
+						"h": 11
+					}
+				}
+			]
+		}
+	],
+	"meta": {
+		"app": "https://www.codeandweb.com/texturepacker",
+		"version": "3.0",
+		"smartupdate": "$TexturePacker:SmartUpdate:94c22d6262cd0cecffa2d6cc2e414f4f:d7eb22f5f0a4138e6c55871559b79ba6:3095c57fbbd330068b206a9f43d27330$"
+	}
+}

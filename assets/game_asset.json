@@ -1,0 +1,251 @@
+{
+	"textures": [
+		{
+			"image": "game_asset.png",
+			"format": "RGBA8888",
+			"size": {
+				"w": 228,
+				"h": 402
+			},
+			"scale": 1,
+			"frames": [
+				{
+					"filename": "scorpion9.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 17,
+						"h": 10
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 4,
+						"w": 17,
+						"h": 3
+					},
+					"frame": {
+						"x": 1,
+						"y": 1,
+						"w": 17,
+						"h": 3
+					}
+				},
+				{
+					"filename": "scorpion10.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 17,
+						"h": 10
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 1,
+						"w": 17,
+						"h": 9
+					},
+					"frame": {
+						"x": 20,
+						"y": 1,
+						"w": 17,
+						"h": 9
+					}
+				},
+				{
+					"filename": "scorpion7.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 17,
+						"h": 10
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 17,
+						"h": 10
+					},
+					"frame": {
+						"x": 39,
+						"y": 1,
+						"w": 17,
+						"h": 10
+					}
+				},
+				{
+					"filename": "scorpion8.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 17,
+						"h": 10
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 17,
+						"h": 10
+					},
+					"frame": {
+						"x": 58,
+						"y": 1,
+						"w": 17,
+						"h": 10
+					}
+				},
+				{
+					"filename": "scorpion3.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 123,
+						"h": 133
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 2,
+						"w": 73,
+						"h": 131
+					},
+					"frame": {
+						"x": 77,
+						"y": 1,
+						"w": 73,
+						"h": 131
+					}
+				},
+				{
+					"filename": "scorpion6.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 123,
+						"h": 133
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 2,
+						"w": 74,
+						"h": 131
+					},
+					"frame": {
+						"x": 152,
+						"y": 1,
+						"w": 74,
+						"h": 131
+					}
+				},
+				{
+					"filename": "scorpion1.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 123,
+						"h": 133
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 73,
+						"h": 133
+					},
+					"frame": {
+						"x": 1,
+						"y": 13,
+						"w": 73,
+						"h": 133
+					}
+				},
+				{
+					"filename": "scorpion0.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 123,
+						"h": 133
+					},
+					"spriteSourceSize": {
+						"x": 10,
+						"y": 1,
+						"w": 113,
+						"h": 132
+					},
+					"frame": {
+						"x": 76,
+						"y": 134,
+						"w": 113,
+						"h": 132
+					}
+				},
+				{
+					"filename": "scorpion2.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 123,
+						"h": 133
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 73,
+						"h": 133
+					},
+					"frame": {
+						"x": 1,
+						"y": 148,
+						"w": 73,
+						"h": 133
+					}
+				},
+				{
+					"filename": "scorpion4.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 123,
+						"h": 133
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 74,
+						"h": 133
+					},
+					"frame": {
+						"x": 76,
+						"y": 268,
+						"w": 74,
+						"h": 133
+					}
+				},
+				{
+					"filename": "scorpion5.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 123,
+						"h": 133
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 75,
+						"h": 133
+					},
+					"frame": {
+						"x": 152,
+						"y": 268,
+						"w": 75,
+						"h": 133
+					}
+				}
+			]
+		}
+	],
+	"meta": {
+		"app": "https://www.codeandweb.com/texturepacker",
+		"version": "3.0",
+		"smartupdate": "$TexturePacker:SmartUpdate:d3752f5759a55548f1408b30b06f6985:1d5c75dad8eb6566afeee8f03947e1bb:0d55dd2f639f786d4ee79f8bf255e323$"
+	}
+}
