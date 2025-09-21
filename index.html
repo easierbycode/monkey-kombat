@@ -6,6 +6,11 @@
   <title>Monkey Kombat Character Select</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+
+    html,
+    body {
+      height: 100%;
+    }
     
     body {
       background: linear-gradient(45deg, #1a1a2e, #16213e, #0f3460);
@@ -19,6 +24,7 @@
         radial-gradient(circle at 25% 25%, #333 1px, transparent 1px),
         radial-gradient(circle at 75% 75%, #333 1px, transparent 1px);
       background-size: 50px 50px;
+      transition: background 0.4s ease;
     }
 
     h1 {
@@ -40,6 +46,7 @@
       flex-direction: column;
       align-items: center;
       height: calc(100vh - 120px);
+      position: relative;
     }
 
     .character-grid {
@@ -72,6 +79,7 @@
       text-decoration: none;
       border-radius: 5px;
       box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
+      color: inherit;
     }
 
     .character-tile:hover,
@@ -108,6 +116,7 @@
       object-fit: contain;
       filter: brightness(1.1) contrast(1.2);
       transition: filter 0.2s ease;
+      pointer-events: none;
     }
 
     .character-tile:hover img,
@@ -150,7 +159,6 @@
       opacity: 0.8;
     }
 
-    /* Hide instructions when in launcher */
     body.inLauncher .instructions {
       display: none;
     }
@@ -161,7 +169,6 @@
       100% { opacity: 0.7; transform: scale(1); }
     }
 
-    /* Corner decorations */
     .select-container::before,
     .select-container::after {
       content: '';
@@ -187,8 +194,7 @@
       border-top: none;
       box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
     }
-    
-    /* Landscape orientation adjustments */
+
     @media (orientation: landscape) and (max-height: 600px) {
       h1 {
         font-size: 1.8em;
@@ -232,7 +238,6 @@
       }
     }
 
-    /* Mobile adjustments */
     @media (max-width: 768px) {
       .character-grid {
         grid-template-columns: repeat(3, 1fr);
@@ -252,153 +257,256 @@
         font-size: 0.8em;
       }
     }
+
+    body.game-active {
+      background: #111;
+      background-image: none;
+      cursor: none;
+      image-rendering: pixelated;
+      overflow: hidden;
+    }
+
+    body.game-active .select-container,
+    body.game-active .instructions {
+      display: none;
+    }
+
+    .game-wrapper {
+      position: fixed;
+      inset: 0;
+      display: none;
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+
+    body.game-active .game-wrapper {
+      display: block;
+    }
+
+    #gameRoot {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    #gameRoot canvas {
+      image-rendering: pixelated;
+    }
+
+    .game-ui {
+      position: absolute;
+      top: 0px;
+      left: 0px;
+      z-index: 10;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .back-button {
+      background: rgba(17, 17, 17, 0.85);
+      border: 2px solid #ffd700;
+      color: #ffd700;
+      font-family: 'Orbitron', monospace;
+      font-weight: 700;
+      letter-spacing: 1px;
+      padding: 10px 20px;
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: all 0.2s ease;
+    }
+
+    .back-button:hover {
+      background: #ffd700;
+      color: #000;
+      box-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
+    }
+
+    .game-status {
+      color: #ffd700;
+      font-family: 'Orbitron', monospace;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      text-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
+    }
   </style>
+  <script src="https://assets.codepen.io/11817390/TweenMax.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.88.2/dist/phaser.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
 <body>
-  <div class="select-container">
+  <div class="select-container" id="selectContainer">
     <h1>MONKEY KOMBAT</h1>
     <div class="choose">CHOOSE YOUR FIGHTER</div>
     
     <div class="character-grid" id="characterGrid">
-      <!-- Character Tiles -->
-      <a href="_index.html?scene=0" class="character-tile" data-index="0">
+      <a href="#scene-0" class="character-tile" data-index="0" data-scene="0">
         <img src="assets/cyrax.png" alt="Cyrax">
         <div class="character-name">CYRAX</div>
       </a>
       
-      <a href="_index.html?scene=1" class="character-tile" data-index="1">
+      <a href="#scene-1" class="character-tile" data-index="1" data-scene="1">
         <img src="assets/parabomb.png" alt="Parabomb">
         <div class="character-name">PARABOMB</div>
       </a>
       
-      <a href="_index.html?scene=2" class="character-tile" data-index="2">
+      <a href="#scene-2" class="character-tile" data-index="2" data-scene="2">
         <img src="assets/animus.png" alt="Animus">
         <div class="character-name">ANIMUS</div>
       </a>
       
-      <a href="_index.html?scene=3" class="character-tile" data-index="3">
+      <a href="#scene-3" class="character-tile" data-index="3" data-scene="3">
         <img src="assets/liu-kang.png" alt="Liu Kang">
         <div class="character-name">LIU KANG</div>
       </a>
       
-      <a href="_index.html?scene=4" class="character-tile" data-index="4">
+      <a href="#scene-4" class="character-tile" data-index="4" data-scene="4">
         <img src="assets/rainbow-cloud.png" alt="Rainbow Dash">
         <div class="character-name">RAINBOW DASH</div>
       </a>
       
-      <a href="_index.html?scene=5" class="character-tile" data-index="5">
+      <a href="#scene-5" class="character-tile" data-index="5" data-scene="5">
         <img src="assets/bowser.png" alt="Bowser">
         <div class="character-name">BOWSER</div>
       </a>
       
-      <a href="_index.html?scene=6" class="character-tile" data-index="6">
+      <a href="#scene-6" class="character-tile" data-index="6" data-scene="6">
         <img src="assets/tyson.png" alt="Mike Tyson">
         <div class="character-name">MIKE TYSON</div>
       </a>
       
-      <a href="_index.html?scene=7" class="character-tile" data-index="7">
+      <a href="#scene-7" class="character-tile" data-index="7" data-scene="7">
         <img src="assets/beavis.png" alt="Beavis">
         <div class="character-name">BEAVIS</div>
       </a>
       
-      <a href="_index.html?scene=8" class="character-tile" data-index="8">
+      <a href="#scene-8" class="character-tile" data-index="8" data-scene="8">
         <img src="assets/game_asset.png" alt="Scorpion">
         <div class="character-name">SCORPION</div>
       </a>
       
-      <a href="_index.html?scene=9" class="character-tile" data-index="9">
+      <a href="#scene-9" class="character-tile" data-index="9" data-scene="9">
         <img src="assets/santa.png" alt="Santa">
         <div class="character-name">SANTA</div>
       </a>
       
-      <a href="_index.html?scene=10" class="character-tile" data-index="10">
+      <a href="#scene-10" class="character-tile" data-index="10" data-scene="10">
         <img src="assets/sonic.png" alt="Sonic">
         <div class="character-name">SONIC</div>
       </a>
       
-      <!-- Empty tile for 4x3 grid completion -->
       <div class="character-tile" data-index="11" style="opacity: 0.3; cursor: not-allowed;">
         <div class="character-name">COMING SOON</div>
       </div>
     </div>
 
     <div class="instructions">
-      Use ARROW KEYS to navigate • ENTER or SPACE to select • MOUSE to click
+      Use ARROW KEYS to navigate • ENTER or SPACE to select • ESC to return from battle
     </div>
   </div>
 
-  <script>
+  <div class="game-wrapper" id="gameWrapper" aria-live="polite">
+    <div class="game-ui">
+      <button class="back-button" id="backButton" type="button">← Character Select</button>
+      <div class="game-status" id="gameStatus">Select a fighter to begin</div>
+    </div>
+    <div id="gameRoot"></div>
+  </div>
+
+  <script type="module">
+    import { startGame, destroyGame } from './src/main.js';
+
     class CharacterSelect {
-      constructor() {
-        this.tiles = document.querySelectorAll('.character-tile');
-        this.currentIndex = 0;
+      constructor({ onSelect, initialIndex = 0 } = {}) {
+        this.onSelect = onSelect;
+        this.tiles = Array.from(document.querySelectorAll('.character-tile'));
+        this.currentIndex = this.normalizeIndex(initialIndex);
         this.cols = this.getCols();
-        this.rows = Math.ceil(this.tiles.length / this.cols);
-        
+        this.handleKeydown = this.handleKeydown.bind(this);
+
         this.init();
       }
-      
-      getCols() {
-        // Determine columns based on screen size
-        if (window.matchMedia("(orientation: landscape) and (max-height: 600px)").matches) {
-          return 6;
-        } else if (window.matchMedia("(max-width: 768px)").matches) {
-          return 3;
-        } else {
-          return 4;
+
+      normalizeIndex(index) {
+        const parsed = Number.parseInt(index, 10);
+        if (Number.isNaN(parsed)) {
+          return 0;
         }
+        return Math.min(Math.max(parsed, 0), this.tiles.length - 1);
       }
-      
+
       init() {
-        // Set initial selection
-        this.updateSelection();
-        
-        // Add keyboard event listeners
-        document.addEventListener('keydown', (e) => this.handleKeydown(e));
-        
-        // Handle window resize
+        this.updateSelection({ scroll: false });
+
+        document.addEventListener('keydown', this.handleKeydown);
+
         window.addEventListener('resize', () => {
           this.cols = this.getCols();
-          this.rows = Math.ceil(this.tiles.length / this.cols);
         });
-        
-        // Add click handlers to maintain selection state
+
         this.tiles.forEach((tile, index) => {
-          tile.addEventListener('click', () => {
+          tile.addEventListener('click', (event) => {
+            if (document.body.classList.contains('game-active')) {
+              return;
+            }
+
+            const sceneValue = tile.dataset.scene;
+            if (typeof sceneValue === 'undefined') {
+              return;
+            }
+
+            event.preventDefault();
             this.currentIndex = index;
             this.updateSelection();
+            this.selectCurrent();
           });
         });
       }
-      
-      handleKeydown(e) {
-        const key = e.key;
-        
-        switch(key) {
+
+      getCols() {
+        if (window.matchMedia('(orientation: landscape) and (max-height: 600px)').matches) {
+          return 6;
+        }
+        if (window.matchMedia('(max-width: 768px)').matches) {
+          return 3;
+        }
+        return 4;
+      }
+
+      handleKeydown(event) {
+        if (document.body.classList.contains('game-active')) {
+          return;
+        }
+
+        switch (event.key) {
           case 'ArrowUp':
-            e.preventDefault();
+            event.preventDefault();
             this.moveUp();
             break;
           case 'ArrowDown':
-            e.preventDefault();
+            event.preventDefault();
             this.moveDown();
             break;
           case 'ArrowLeft':
-            e.preventDefault();
+            event.preventDefault();
             this.moveLeft();
             break;
           case 'ArrowRight':
-            e.preventDefault();
+            event.preventDefault();
             this.moveRight();
             break;
           case 'Enter':
-          case ' ': // Space key
-            e.preventDefault();
+          case ' ':
+            event.preventDefault();
             this.selectCurrent();
+            break;
+          default:
             break;
         }
       }
-      
+
       moveUp() {
         const currentRow = Math.floor(this.currentIndex / this.cols);
         if (currentRow > 0) {
@@ -406,62 +514,157 @@
           this.updateSelection();
         }
       }
-      
+
       moveDown() {
-        const currentRow = Math.floor(this.currentIndex / this.cols);
         const newIndex = this.currentIndex + this.cols;
-        if (currentRow < this.rows - 1 && newIndex < this.tiles.length) {
+        if (newIndex < this.tiles.length) {
           this.currentIndex = newIndex;
           this.updateSelection();
         }
       }
-      
+
       moveLeft() {
         const currentCol = this.currentIndex % this.cols;
         if (currentCol > 0) {
-          this.currentIndex--;
+          this.currentIndex -= 1;
           this.updateSelection();
         }
       }
-      
+
       moveRight() {
         const currentCol = this.currentIndex % this.cols;
         if (currentCol < this.cols - 1 && this.currentIndex + 1 < this.tiles.length) {
-          this.currentIndex++;
+          this.currentIndex += 1;
           this.updateSelection();
         }
       }
-      
-      updateSelection() {
-        // Remove selected class from all tiles
-        this.tiles.forEach(tile => tile.classList.remove('selected'));
-        
-        // Add selected class to current tile
-        if (this.tiles[this.currentIndex]) {
-          this.tiles[this.currentIndex].classList.add('selected');
-          
-          // Scroll into view if necessary
-          this.tiles[this.currentIndex].scrollIntoView({
+
+      updateSelection({ scroll = true } = {}) {
+        this.tiles.forEach((tile) => tile.classList.remove('selected'));
+
+        const currentTile = this.tiles[this.currentIndex];
+        if (!currentTile) {
+          return;
+        }
+
+        currentTile.classList.add('selected');
+        if (scroll) {
+          currentTile.scrollIntoView({
             behavior: 'smooth',
             block: 'center',
-            inline: 'center'
+            inline: 'center',
           });
         }
       }
-      
+
       selectCurrent() {
         const currentTile = this.tiles[this.currentIndex];
-        if (currentTile && currentTile.href) {
-          // Navigate to the character's page
-          window.location.href = currentTile.href;
+        if (!currentTile) {
+          return;
+        }
+
+        const sceneValue = currentTile.dataset.scene;
+        if (typeof sceneValue === 'undefined') {
+          return;
+        }
+
+        const sceneIndex = Number.parseInt(sceneValue, 10);
+        if (Number.isNaN(sceneIndex)) {
+          return;
+        }
+
+        if (this.onSelect) {
+          this.onSelect(sceneIndex);
         }
       }
+
+      focus(index) {
+        this.currentIndex = this.normalizeIndex(index);
+        this.updateSelection({ scroll: false });
+      }
+
+      focusCurrent() {
+        this.updateSelection({ scroll: false });
+      }
+
+      isValidSceneIndex(sceneIndex) {
+        const parsed = Number.parseInt(sceneIndex, 10);
+        return !Number.isNaN(parsed)
+          && parsed >= 0
+          && parsed < this.tiles.length
+          && typeof this.tiles[parsed]?.dataset.scene !== 'undefined';
+      }
     }
-    
-    // Initialize character select when page loads
-    document.addEventListener('DOMContentLoaded', () => {
-      new CharacterSelect();
+
+    const backButton = document.getElementById('backButton');
+    const statusLabel = document.getElementById('gameStatus');
+    const params = new URLSearchParams(window.location.search);
+    const debugEnabled = params.get('debug') === '1';
+    const initialSceneParam = Number.parseInt(params.get('scene'), 10);
+
+    const characterSelect = new CharacterSelect({
+      onSelect: (sceneIndex) => launchScene(sceneIndex),
+      initialIndex: !Number.isNaN(initialSceneParam) ? initialSceneParam : 0,
     });
+
+    if (!Number.isNaN(initialSceneParam) && characterSelect.isValidSceneIndex(initialSceneParam)) {
+      launchScene(initialSceneParam, { updateHistory: false });
+    } else {
+      updateUrl(null);
+    }
+
+    backButton.addEventListener('click', () => {
+      exitToSelect();
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && document.body.classList.contains('game-active')) {
+        event.preventDefault();
+        exitToSelect();
+      }
+    });
+
+    function launchScene(sceneIndex, { updateHistory = true } = {}) {
+      const idx = Number.parseInt(sceneIndex, 10);
+      if (Number.isNaN(idx)) {
+        return;
+      }
+
+      document.body.classList.add('game-active');
+      statusLabel.textContent = 'Press ESC to return';
+      characterSelect.focus(idx);
+
+      startGame({ sceneIndex: idx, debug: debugEnabled, parent: 'gameRoot' });
+
+      if (updateHistory) {
+        updateUrl(idx);
+      }
+    }
+
+    function exitToSelect() {
+      destroyGame();
+      document.body.classList.remove('game-active');
+      statusLabel.textContent = 'Select a fighter to begin';
+      updateUrl(null);
+      characterSelect.focusCurrent();
+    }
+
+    function updateUrl(sceneIndex) {
+      const url = new URL(window.location.href);
+      if (sceneIndex === null || typeof sceneIndex === 'undefined') {
+        url.searchParams.delete('scene');
+      } else {
+        url.searchParams.set('scene', sceneIndex);
+      }
+
+      if (debugEnabled) {
+        url.searchParams.set('debug', '1');
+      } else {
+        url.searchParams.delete('debug');
+      }
+
+      window.history.replaceState(null, '', url);
+    }
   </script>
 </body>
 </html>
