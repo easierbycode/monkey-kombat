@@ -57,41 +57,127 @@ export default class Monkey extends Phaser.Physics.Arcade.Sprite {
         scene.add.existing( this );
     }
 
+    safeExplode( emitterManager, quantity ) {
+        if ( !emitterManager ) {
+            return;
+        }
+
+        const emitters = emitterManager.emitters?.list;
+
+        if ( !emitters || emitters.length === 0 ) {
+            return;
+        }
+
+        for ( let idx = 0; idx < emitters.length; idx++ ) {
+            const emitter = emitters[idx];
+
+            if ( !emitter || emitter.manager !== emitterManager ) {
+                continue;
+            }
+
+            if ( typeof emitter.explode === 'function' ) {
+                emitter.explode( quantity, this.x, this.y );
+            }
+        }
+    }
+
+    getActiveScene() {
+        const scene = this.scene;
+
+        if ( !scene || !scene.sys ) {
+            return null;
+        }
+
+        const systems = scene.sys;
+
+        if ( typeof systems.isShutdown === 'function' && systems.isShutdown() ) {
+            return null;
+        }
+
+        if ( typeof systems.isDestroyed === 'function' && systems.isDestroyed() ) {
+            return null;
+        }
+
+        if ( typeof systems.isActive === 'function' && !systems.isActive() ) {
+            return null;
+        }
+
+        return scene;
+    }
+
     bloodAnimation() {
+        const scene = this.getActiveScene();
+
+        if ( !scene || !scene.add ) {
+            return;
+        }
+
         // blood
-        window.gameScene.add.sprite( this.x, this.y - (this.displayHeight / 2), 'blood' )
+        scene.add.sprite( this.x, this.y - (this.displayHeight / 2), 'blood' )
             .setScale( 2.5 )
             .play( 'bloodAnimation' );
     }
 
     showCodeMonkeyBanner() {
+        const scene = this.getActiveScene();
+
+        if ( !scene || !scene.add ) {
+            return;
+        }
+
         // show CodeMonkey.Games text
-        window.gameScene.add.text(this.x - (this.displayWidth + 10), this.y - (this.displayHeight / 2), 'CodeMonkey.Games', { font: '"Bangers"' });
+        scene.add.text(this.x - (this.displayWidth + 10), this.y - (this.displayHeight / 2), 'CodeMonkey.Games', { font: '"Bangers"' });
     }
 
     destroy() {
-        this.bones.explode( 16 )
-        window.gameScene.cameras.main.shake( 500, 0.01 );
+        const scene = this.getActiveScene();
 
-        window.gameScene.time.delayedCall(
-            25,
-            function() {
-                this.explosionFlash.explode( 1 );
+        this.safeExplode( this.bones, 16 );
+
+        if ( !scene ) {
+            this.safeExplode( this.muscles, 32 );
+            this.safeExplode( this.explosionFlash, 1 );
+
+            super.destroy();
+            return;
+        }
+
+        if ( scene.cameras && scene.cameras.main ) {
+            scene.cameras.main.shake( 500, 0.01 );
+        }
+
+        const canDelay = scene.time && typeof scene.time.delayedCall === 'function';
+
+        if ( canDelay ) {
+            scene.time.delayedCall( 25, () => {
+                this.safeExplode( this.explosionFlash, 1 );
 
                 this.bloodAnimation();
 
-                this.muscles.explode( 60 );
+                this.safeExplode( this.muscles, 60 );
 
                 this.showCodeMonkeyBanner();
-            },
-            [],
-            this
-        )
+            } );
 
-        window.gameScene.time.delayedCall( 50, () => {
-            this.muscles.explode( 32 );
-            super.destroy();
-        });
+            scene.time.delayedCall( 50, () => {
+                this.safeExplode( this.muscles, 32 );
+
+                super.destroy();
+            } );
+
+            return;
+        }
+
+        this.safeExplode( this.explosionFlash, 1 );
+
+        this.bloodAnimation();
+
+        this.safeExplode( this.muscles, 60 );
+        this.safeExplode( this.muscles, 32 );
+
+        this.showCodeMonkeyBanner();
+
+        super.destroy();
     }
 
     damage( bullet ) {
