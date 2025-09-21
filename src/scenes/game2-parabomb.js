@@ -10,28 +10,28 @@ export default class Game extends Phaser.Scene {
 
   preload() {
     // Audio
-    this.load.audio('bombExplosion', '../assets/mk3-00500-explosion.wav');
+    this.load.audio('bombExplosion', './assets/mk3-00500-explosion.wav');
 
     // Spritesheets and Images
-    this.load.atlas('explosion', '../assets/explosion.png', '../assets/explosion.json');
-    this.load.image('monkey', '../assets/monkey.png');
+    this.load.atlas('explosion', './assets/explosion.png', './assets/explosion.json');
+    this.load.image('monkey', './assets/monkey.png');
 
-    this.load.spritesheet('parabomb', '../assets/parabomb.png', {
+    this.load.spritesheet('parabomb', './assets/parabomb.png', {
       frameWidth : 34,
       frameHeight: 42,
       endFrame   : 18
     });
 
-    this.load.spritesheet('blood', '../assets/blood.png', {
+    this.load.spritesheet('blood', './assets/blood.png', {
       frameWidth : 88,
       frameHeight: 71,
       endFrame   : 9
     });
-    this.load.spritesheet('bone', '../assets/bone.png', {
+    this.load.spritesheet('bone', './assets/bone.png', {
       frameWidth : 18,
       frameHeight: 18
     });
-    this.load.spritesheet('muscle', '../assets/muscle.png', {
+    this.load.spritesheet('muscle', './assets/muscle.png', {
       frameWidth : 23,
       frameHeight: 22
     });

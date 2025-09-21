@@ -8,39 +8,39 @@ export default class Game extends Phaser.Scene {
   }
 
   preload() {
-    this.load.atlas('explosion', '../assets/explosion.png', '../assets/explosion.json');
-    this.load.image('headlessMonkey', '../assets/monkey-headless.png');
-    this.load.image('monkey', '../assets/monkey.png');
+    this.load.atlas('explosion', './assets/explosion.png', './assets/explosion.json');
+    this.load.image('headlessMonkey', './assets/monkey-headless.png');
+    this.load.image('monkey', './assets/monkey.png');
 
-    this.load.spritesheet('blood', '../assets/blood.png', {
+    this.load.spritesheet('blood', './assets/blood.png', {
       frameWidth : 88,
       frameHeight: 71,
       endFrame   : 9
     });
 
-    this.load.spritesheet('bone', '../assets/bone.png', {
+    this.load.spritesheet('bone', './assets/bone.png', {
       frameWidth : 18,
       frameHeight: 18
     });
 
-    this.load.spritesheet('liuKang', '../assets/liu-kang.png', {
+    this.load.spritesheet('liuKang', './assets/liu-kang.png', {
       frameWidth : 129,
       frameHeight: 169,
       endFrame   : 12
     });
 
-    this.load.spritesheet('liuKangIdle', '../assets/liu-kang-idle.png', {
+    this.load.spritesheet('liuKangIdle', './assets/liu-kang-idle.png', {
       frameWidth : 42,
       frameHeight: 100,
       endFrame   : 5
     });
 
-    this.load.spritesheet('muscle', '../assets/muscle.png', {
+    this.load.spritesheet('muscle', './assets/muscle.png', {
       frameWidth : 23,
       frameHeight: 22
     });
 
-    this.load.spritesheet('blade', '../assets/blade.png', {
+    this.load.spritesheet('blade', './assets/blade.png', {
       frameWidth : 62,
       frameHeight: 208,
       endFrame   : 1

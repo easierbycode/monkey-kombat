@@ -6,22 +6,22 @@ export default class Game extends Phaser.Scene {
     }
 
     preload() {
-        this.load.atlas('explosion', '../assets/explosion.png', '../assets/explosion.json');
-        this.load.atlas('santa', '../assets/santa.png', '../assets/santa.json');
-        this.load.image('monkey', '../assets/monkey.png');
+        this.load.atlas('explosion', './assets/explosion.png', './assets/explosion.json');
+        this.load.atlas('santa', './assets/santa.png', './assets/santa.json');
+        this.load.image('monkey', './assets/monkey.png');
         
-        this.load.spritesheet('blood', '../assets/blood.png', {
+        this.load.spritesheet('blood', './assets/blood.png', {
             frameWidth: 88,
             frameHeight: 71,
             endFrame: 9
         });
 
-        this.load.spritesheet('bone', '../assets/bone.png', {
+        this.load.spritesheet('bone', './assets/bone.png', {
             frameWidth: 18,
             frameHeight: 18
         });
 
-        this.load.spritesheet('muscle', '../assets/muscle.png', {
+        this.load.spritesheet('muscle', './assets/muscle.png', {
             frameWidth: 23,
             frameHeight: 22
         });

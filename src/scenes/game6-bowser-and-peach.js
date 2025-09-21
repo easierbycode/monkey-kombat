@@ -7,40 +7,40 @@ export default class Game extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image('bowserCopter', '../assets/bowser-copter.png');
-    this.load.atlas('explosion', '../assets/explosion.png', '../assets/explosion.json');
-    this.load.image('monkey', '../assets/monkey.png');
+    this.load.image('bowserCopter', './assets/bowser-copter.png');
+    this.load.atlas('explosion', './assets/explosion.png', './assets/explosion.json');
+    this.load.image('monkey', './assets/monkey.png');
 
-    this.load.spritesheet('blood', '../assets/blood.png', {
+    this.load.spritesheet('blood', './assets/blood.png', {
       frameWidth : 88,
       frameHeight: 71,
       endFrame   : 9
     });
 
-    this.load.spritesheet('bone', '../assets/bone.png', {
+    this.load.spritesheet('bone', './assets/bone.png', {
       frameWidth : 18,
       frameHeight: 18
     });
 
-    this.load.spritesheet('bowser', '../assets/bowser.png', {
+    this.load.spritesheet('bowser', './assets/bowser.png', {
       frameWidth : 49,
       frameHeight: 37,
       endFrame   : 5
     });
 
-    this.load.spritesheet('bowserCannonball', '../assets/bowser-cannonball.png', {
+    this.load.spritesheet('bowserCannonball', './assets/bowser-cannonball.png', {
       frameWidth : 48,
       frameHeight: 48,
       endFrame   : 7
     });
 
-    this.load.spritesheet('bowserCopterPropeller', '../assets/bowser-copter-propeller.png', {
+    this.load.spritesheet('bowserCopterPropeller', './assets/bowser-copter-propeller.png', {
       frameWidth : 40,
       frameHeight: 8,
       endFrame   : 2
     });
 
-    this.load.spritesheet('muscle', '../assets/muscle.png', {
+    this.load.spritesheet('muscle', './assets/muscle.png', {
       frameWidth : 23,
       frameHeight: 22
     });

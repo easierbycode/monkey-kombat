@@ -8,23 +8,23 @@ export default class Game extends Phaser.Scene {
 
     preload() {
         // Load assets directly via Phaser loader methods
-        this.load.atlas('explosion', '../assets/explosion.png', '../assets/explosion.json');
-        this.load.image('monkey', '../assets/monkey.png');
+        this.load.atlas('explosion', './assets/explosion.png', './assets/explosion.json');
+        this.load.image('monkey', './assets/monkey.png');
       
-        this.load.spritesheet('blood', '../assets/blood.png', {
+        this.load.spritesheet('blood', './assets/blood.png', {
             frameWidth: 88,
             frameHeight: 71,
             endFrame: 9
         });
 
-        this.load.spritesheet('tyson', '../assets/tyson.png', {
+        this.load.spritesheet('tyson', './assets/tyson.png', {
             frameWidth : 55,
             frameHeight: 122,
             endFrame   : 12
         });
 
-        this.load.image('monkey-headless', '../assets/monkey-headless.png');
-        this.load.image('monkey-head', '../assets/monkey-head.png');
+        this.load.image('monkey-headless', './assets/monkey-headless.png');
+        this.load.image('monkey-head', './assets/monkey-head.png');
     }
 
     create() {

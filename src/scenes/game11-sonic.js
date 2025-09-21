@@ -8,42 +8,42 @@ export default class Game extends Phaser.Scene {
 
     preload() {
         // Load sonic sprite from Aseprite file
-        this.load.aseprite('sonic', '../assets/sonic.png', '../assets/sonic.json');
+        this.load.aseprite('sonic', './assets/sonic.png', './assets/sonic.json');
 
         // Load sonic dust effect
-        this.load.aseprite('sonic-dust', '../assets/sonic-dust.png', '../assets/sonic-dust.json');
+        this.load.aseprite('sonic-dust', './assets/sonic-dust.png', './assets/sonic-dust.json');
 
         // Load spin animation atlas
-        this.load.atlas('spin', '../assets/spin.png', '../assets/spin.json');
+        this.load.atlas('spin', './assets/spin.png', './assets/spin.json');
 
         // Load monkey image
-        this.load.image('monkey', '../assets/monkey.png');
+        this.load.image('monkey', './assets/monkey.png');
 
         // Load blood animation sprites
-        this.load.spritesheet('blood', '../assets/blood.png', {
+        this.load.spritesheet('blood', './assets/blood.png', {
             frameWidth: 88,
             frameHeight: 71,
             endFrame: 9
         });
 
         // Load particle effects
-        this.load.spritesheet('bone', '../assets/bone.png', {
+        this.load.spritesheet('bone', './assets/bone.png', {
             frameWidth: 18,
             frameHeight: 18
         });
 
-        this.load.spritesheet('muscle', '../assets/muscle.png', {
+        this.load.spritesheet('muscle', './assets/muscle.png', {
             frameWidth: 23,
             frameHeight: 22
         });
 
-        this.load.atlas('explosion', '../assets/explosion.png', '../assets/explosion.json');
+        this.load.atlas('explosion', './assets/explosion.png', './assets/explosion.json');
 
         // Load spin sound
-        this.load.audio('spinSound', '../assets/spin.wav');
+        this.load.audio('spinSound', './assets/spin.wav');
         
         // Load explosion sound
-        this.load.audio('explosionSound', '../assets/mk3-00500-explosion.wav');
+        this.load.audio('explosionSound', './assets/mk3-00500-explosion.wav');
     }
 
     create() {

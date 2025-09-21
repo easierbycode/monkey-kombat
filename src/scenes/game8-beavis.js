@@ -7,32 +7,32 @@ export default class Game extends Phaser.Scene {
     }
 
     preload() {
-        this.load.atlas('explosion', '../assets/explosion.png', '../assets/explosion.json');
+        this.load.atlas('explosion', './assets/explosion.png', './assets/explosion.json');
       
-        this.load.image('monkey', '../assets/monkey.png');
+        this.load.image('monkey', './assets/monkey.png');
 
-        this.load.spritesheet('beavis', '../assets/beavis.png', {
+        this.load.spritesheet('beavis', './assets/beavis.png', {
             frameWidth : 61,
             frameHeight: 90
         });
 
-        this.load.spritesheet('beavis2', '../assets/beavis2.png', {
+        this.load.spritesheet('beavis2', './assets/beavis2.png', {
             frameWidth : 49,
             frameHeight: 91
         });
 
-        this.load.spritesheet('blood', '../assets/blood.png', {
+        this.load.spritesheet('blood', './assets/blood.png', {
             frameWidth : 88,
             frameHeight: 71,
             endFrame   : 9
         });
 
-        this.load.spritesheet('bone', '../assets/bone.png', {
+        this.load.spritesheet('bone', './assets/bone.png', {
             frameWidth : 18,
             frameHeight: 18
         });
 
-        this.load.spritesheet('muscle', '../assets/muscle.png', {
+        this.load.spritesheet('muscle', './assets/muscle.png', {
             frameWidth : 23,
             frameHeight: 22
         });
