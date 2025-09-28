@@ -10,6 +10,7 @@ import Beavis from './scenes/game8-beavis.js';
 import Scorpion from './scenes/game9-scorpion.js';
 import Santa from './scenes/game10-santa.js';
 import Game11 from './scenes/game11-sonic.js';
+import Game12 from './scenes/game12-cat.js';
 
 window.Phaser = Phaser;
 
@@ -25,6 +26,7 @@ const scenes = [
   Scorpion,
   Santa,
   Game11,
+  Game12,
 ];
 
 let gameInstance = null;
