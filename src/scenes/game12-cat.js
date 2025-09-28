@@ -7,6 +7,9 @@ export default class Game extends Phaser.Scene {
 
   preload() {
     this.load.atlas('cat-idle', './assets/cat-idle.png', './assets/cat-idle.json');
+    this.load.atlas('cat-teleport', './assets/cat-teleport.png', './assets/cat-teleport.json');
+    this.load.atlas('cat-hat', './assets/cat-hat.png', './assets/cat-hat.json');
+    this.load.atlas('cat-blow', './assets/cat-blow.png', './assets/cat-blow.json');
     this.load.atlas('explosion', './assets/explosion.png', './assets/explosion.json');
     this.load.image('monkey', './assets/monkey.png');
     this.load.spritesheet('blood', './assets/blood.png', {
@@ -35,23 +38,201 @@ export default class Game extends Phaser.Scene {
     });
     this.monkey.x -= this.monkey.displayWidth / 2;
 
+    const idleFrameRate = 12;
+    const idleFrames = this.anims.generateFrameNames('cat-idle', {
+      prefix: 'atlas_s',
+      start: 0,
+      end: 15
+    });
+
     if (!this.anims.exists('idle')) {
       this.anims.create({
         key: 'idle',
-        frames: this.anims.generateFrameNames('cat-idle', {
+        frames: idleFrames,
+        frameRate: idleFrameRate,
+        repeat: -1
+      });
+    }
+
+    const idleLoopDuration = idleFrames.length / idleFrameRate;
+    const idlePrepRepeat = Math.max(0, Math.ceil(4 / idleLoopDuration) - 1);
+
+    if (!this.anims.exists('cat-idle-prep')) {
+      this.anims.create({
+        key: 'cat-idle-prep',
+        frames: idleFrames,
+        frameRate: idleFrameRate,
+        repeat: idlePrepRepeat
+      });
+    }
+
+    if (!this.anims.exists('cat-teleport-intro')) {
+      this.anims.create({
+        key: 'cat-teleport-intro',
+        frames: this.anims.generateFrameNames('cat-teleport', {
           prefix: 'atlas_s',
           start: 0,
-          end: 15
+          end: 5
         }),
+        frameRate: 12,
+        repeat: 0,
+        yoyo: true
+      });
+    }
+
+    if (!this.anims.exists('cat-teleport')) {
+      this.anims.create({
+        key: 'cat-teleport',
+        frames: this.anims.generateFrameNames('cat-teleport', {
+          prefix: 'atlas_s',
+          start: 0,
+          end: 11
+        }),
+        frameRate: 12,
+        repeat: 0
+      });
+    }
+
+    if (!this.anims.exists('cat-hat-intro')) {
+      this.anims.create({
+        key: 'cat-hat-intro',
+        frames: this.anims.generateFrameNames('cat-hat', {
+          prefix: 'atlas_s',
+          start: 0,
+          end: 4
+        }),
+        frameRate: 12,
+        repeat: 0
+      });
+    }
+
+    if (!this.anims.exists('cat-blow-main')) {
+      this.anims.create({
+        key: 'cat-blow-main',
+        frames: [
+          { key: 'cat-blow', frame: 'atlas_s7' },
+          { key: 'cat-blow', frame: 'atlas_s0' },
+          { key: 'cat-blow', frame: 'atlas_s1' },
+          { key: 'cat-blow', frame: 'atlas_s2' },
+          { key: 'cat-blow', frame: 'atlas_s3' }
+        ],
         frameRate: 12,
         repeat: -1
       });
     }
 
     this.cat = this.add.sprite(0, gameHeight, 'cat-idle', 'atlas_s0');
-    this.cat.setOrigin(1, 1);
     this.cat.setScale(6);
-    this.cat.setX(this.cat.displayWidth);
-    this.cat.play('idle');
+
+    const collectFrameWidths = (textureKey, start, end) => {
+      const texture = this.textures.get(textureKey);
+      if (!texture || typeof texture.get !== 'function') {
+        return [];
+      }
+
+      const widths = [];
+      for (let index = start; index <= end; index += 1) {
+        const frameName = `atlas_s${index}`;
+        const frame = texture.get(frameName);
+        if (frame && typeof frame.width === 'number') {
+          widths.push(frame.width);
+        }
+      }
+      return widths;
+    };
+
+    const frameWidths = [
+      ...collectFrameWidths('cat-idle', 0, 15),
+      ...collectFrameWidths('cat-teleport', 0, 11),
+      ...collectFrameWidths('cat-blow', 0, 7)
+    ];
+    const maxFrameWidth = frameWidths.reduce((max, width) => Math.max(max, width), 0);
+    const anchoredRightX = maxFrameWidth * this.cat.scaleX;
+
+    const alignCat = () => {
+      this.cat.setOrigin(1, 1);
+      this.cat.setX(anchoredRightX);
+      this.cat.setY(gameHeight);
+    };
+    alignCat();
+
+    this.cat.on('animationupdate', alignCat);
+    this.cat.on('animationcomplete', alignCat);
+    this.cat.on('animationstart-cat-teleport', alignCat);
+    this.cat.on('animationstart-cat-teleport-intro', alignCat);
+    this.cat.on('animationstart-cat-idle-prep', alignCat);
+    this.cat.on('animationstart-cat-blow-main', alignCat);
+    this.cat.on('animationstart-idle', alignCat);
+
+    this.hatSequenceStarted = false;
+
+    const startHatSequence = () => {
+      if (this.hatSequenceStarted) {
+        return;
+      }
+
+      this.hatSequenceStarted = true;
+
+      this.cat.play('cat-blow-main');
+
+      const hatX = this.monkey.x;
+      const hatY = this.monkey.y - this.monkey.displayHeight - 10;
+
+      this.catHat = this.add.sprite(hatX, hatY, 'cat-hat', 'atlas_s0');
+      this.catHat.setOrigin(0.5, 1);
+      this.catHat.setScale(6);
+      this.catHat.setDepth(5);
+
+      const sequence = [
+        { type: 'hat', frame: 'atlas_s5' },
+        { type: 'blow' },
+        { type: 'hat', frame: 'atlas_s6' },
+        { type: 'blow' },
+        { type: 'hat', frame: 'atlas_s7' },
+        { type: 'blow' },
+        { type: 'hat', frame: 'atlas_s8' }
+      ];
+
+      const hatFrameDelayMs = 600;
+
+      const playSequenceStep = (index) => {
+        if (index >= sequence.length) {
+          this.catBlow.setVisible(false);
+          this.catHat.setVisible(false);
+          this.cat.play('idle');
+          return;
+        }
+
+        const step = sequence[index];
+
+        if (step.type === 'hat') {
+        this.catHat.setFrame(step.frame);
+        this.time.delayedCall(hatFrameDelayMs, () => playSequenceStep(index + 1));
+        return;
+      }
+
+      const blowPauseMs = 300;
+      this.time.delayedCall(blowPauseMs, () => playSequenceStep(index + 1));
+    };
+
+      this.catHat.play('cat-hat-intro');
+      this.catHat.once(Phaser.Animations.Events.ANIMATION_COMPLETE, (animation) => {
+        if (!animation || animation.key !== 'cat-hat-intro') {
+          return;
+        }
+        playSequenceStep(0);
+      });
+    };
+
+    this.cat.on('animationcomplete-cat-idle-prep', startHatSequence);
+
+    this.cat.on('animationcomplete-cat-teleport-intro', () => {
+      this.cat.play('cat-teleport');
+    });
+    this.cat.on('animationcomplete-cat-teleport', () => {
+      this.cat.play('cat-idle-prep');
+    });
+
+    this.cat.play('cat-teleport-intro');
   }
 }
