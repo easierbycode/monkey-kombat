@@ -93,6 +93,31 @@ export default class Game extends Phaser.Scene {
       });
     }
 
+    if (!this.anims.exists('cat-hat-outro')) {
+      this.anims.create({
+        key: 'cat-hat-outro',
+        frames: this.anims.generateFrameNames('cat-hat', {
+          prefix: 'atlas_s',
+          start: 9,
+          end: 11
+        }),
+        frameRate: 12,
+        repeat: 0
+      });
+    }
+
+    if (!this.anims.exists('blood')) {
+      this.anims.create({
+        key: 'blood',
+        frames: this.anims.generateFrameNames('blood', {
+          start: 0,
+          end: 9
+        }),
+        frameRate: 12,
+        repeat: 0
+      });
+    }
+
     if (!this.anims.exists('cat-hat-intro')) {
       this.anims.create({
         key: 'cat-hat-intro',
@@ -197,7 +222,32 @@ export default class Game extends Phaser.Scene {
 
       const playSequenceStep = (index) => {
         if (index >= sequence.length) {
-          this.cat.play('idle');
+          const y = gameHeight;
+          this.tweens.add({
+            targets: [this.catHat],
+            y,
+            ease: Phaser.Math.Easing.Cubic.In,
+            duration: 500,
+            onComplete: () => {
+              this.cameras.main.shake(200, 0.01);
+              this.time.delayedCall(250, () => {
+                const blood = this.add.sprite(this.monkey.x, this.monkey.y, 'blood');
+                blood.setScale(4);
+                blood.on('animationcomplete', () => blood.destroy());
+                blood.play('blood');
+
+                this.monkey.destroy();
+
+                this.catHat.play('cat-hat-outro');
+                this.catHat.once(Phaser.Animations.Events.ANIMATION_COMPLETE, (animation) => {
+                  if (animation.key !== 'cat-hat-outro') {
+                    return;
+                  }
+                  this.cat.play('idle');
+                });
+              });
+            }
+          });
           return;
         }
 
