@@ -12,11 +12,6 @@ export default class Game extends Phaser.Scene {
     this.load.atlas('cat-blow', './assets/cat-blow.png', './assets/cat-blow.json');
     this.load.atlas('explosion', './assets/explosion.png', './assets/explosion.json');
     this.load.image('monkey', './assets/monkey.png');
-    this.load.spritesheet('blood', './assets/blood.png', {
-      frameWidth: 88,
-      frameHeight: 71,
-      endFrame: 9
-    });
     this.load.spritesheet('bone', './assets/bone.png', {
       frameWidth: 18,
       frameHeight: 18
@@ -100,18 +95,6 @@ export default class Game extends Phaser.Scene {
           prefix: 'atlas_s',
           start: 9,
           end: 11
-        }),
-        frameRate: 12,
-        repeat: 0
-      });
-    }
-
-    if (!this.anims.exists('blood')) {
-      this.anims.create({
-        key: 'blood',
-        frames: this.anims.generateFrameNames('blood', {
-          start: 0,
-          end: 9
         }),
         frameRate: 12,
         repeat: 0
@@ -231,11 +214,6 @@ export default class Game extends Phaser.Scene {
             onComplete: () => {
               this.cameras.main.shake(200, 0.01);
               this.time.delayedCall(250, () => {
-                const blood = this.add.sprite(this.monkey.x, this.monkey.y, 'blood');
-                blood.setScale(4);
-                blood.on('animationcomplete', () => blood.destroy());
-                blood.play('blood');
-
                 this.monkey.destroy();
 
                 this.catHat.play('cat-hat-outro');
