@@ -191,20 +191,24 @@ export default class Game extends Phaser.Scene {
       this.catHat.setScale(6);
       this.catHat.setDepth(5);
 
-      const sequence = [
-        { type: 'hat', frame: 'atlas_s5' },
-        { type: 'blow' },
-        { type: 'hat', frame: 'atlas_s6' },
-        { type: 'blow' },
-        { type: 'hat', frame: 'atlas_s7' },
-        { type: 'blow' },
-        { type: 'hat', frame: 'atlas_s8' }
-      ];
+      const hatFrames = ['atlas_s5', 'atlas_s6', 'atlas_s7', 'atlas_s8'];
+      let hatFrameIndex = 0;
+      let blowCycles = 0;
 
-      const hatFrameDelayMs = 600;
+      const onBlowCycle = () => {
+        blowCycles += 1;
 
-      const playSequenceStep = (index) => {
-        if (index >= sequence.length) {
+        // After the 3rd hat frame, wait for 2 blow cycles
+        const waitCycles = hatFrameIndex === 3 ? 2 : 1;
+
+        if (blowCycles < waitCycles) {
+          return;
+        }
+        blowCycles = 0;
+
+        if (hatFrameIndex >= hatFrames.length) {
+          this.cat.off('animationrepeat-cat-blow-main', onBlowCycle);
+
           const y = gameHeight;
           this.tweens.add({
             targets: [this.catHat],
@@ -229,16 +233,15 @@ export default class Game extends Phaser.Scene {
           return;
         }
 
-        const step = sequence[index];
+        this.catHat.setFrame(hatFrames[hatFrameIndex]);
+        hatFrameIndex += 1;
+      };
 
-        if (step.type === 'hat') {
-          this.catHat.setFrame(step.frame);
-          this.time.delayedCall(hatFrameDelayMs, () => playSequenceStep(index + 1));
-          return;
-        }
+      this.cat.on('animationrepeat-cat-blow-main', onBlowCycle);
 
-        const blowPauseMs = 300;
-        this.time.delayedCall(blowPauseMs, () => playSequenceStep(index + 1));
+      const playSequenceStep = () => {
+        this.catHat.setFrame(hatFrames[hatFrameIndex]);
+        hatFrameIndex += 1;
       };
 
       this.catHat.play('cat-hat-intro');
