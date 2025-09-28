@@ -20,6 +20,11 @@ export default class Game extends Phaser.Scene {
       frameWidth: 23,
       frameHeight: 22
     });
+    this.load.spritesheet('blood', './assets/blood.png', {
+      frameWidth: 88,
+      frameHeight: 71,
+      endFrame: 9
+    });
   }
 
   create() {
