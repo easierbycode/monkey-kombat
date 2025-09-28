@@ -116,7 +116,7 @@ export default class Game extends Phaser.Scene {
           { key: 'cat-blow', frame: 'atlas_s2' },
           { key: 'cat-blow', frame: 'atlas_s3' }
         ],
-        frameRate: 12,
+        frameRate: 3,
         repeat: -1
       });
     }
@@ -197,8 +197,6 @@ export default class Game extends Phaser.Scene {
 
       const playSequenceStep = (index) => {
         if (index >= sequence.length) {
-          this.catBlow.setVisible(false);
-          this.catHat.setVisible(false);
           this.cat.play('idle');
           return;
         }
@@ -206,14 +204,14 @@ export default class Game extends Phaser.Scene {
         const step = sequence[index];
 
         if (step.type === 'hat') {
-        this.catHat.setFrame(step.frame);
-        this.time.delayedCall(hatFrameDelayMs, () => playSequenceStep(index + 1));
-        return;
-      }
+          this.catHat.setFrame(step.frame);
+          this.time.delayedCall(hatFrameDelayMs, () => playSequenceStep(index + 1));
+          return;
+        }
 
-      const blowPauseMs = 300;
-      this.time.delayedCall(blowPauseMs, () => playSequenceStep(index + 1));
-    };
+        const blowPauseMs = 300;
+        this.time.delayedCall(blowPauseMs, () => playSequenceStep(index + 1));
+      };
 
       this.catHat.play('cat-hat-intro');
       this.catHat.once(Phaser.Animations.Events.ANIMATION_COMPLETE, (animation) => {
