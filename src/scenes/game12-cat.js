@@ -191,51 +191,56 @@ export default class Game extends Phaser.Scene {
       this.catHat.setScale(6);
       this.catHat.setDepth(5);
 
-      const hatFrames = ['atlas_s5', 'atlas_s6', 'atlas_s7', 'atlas_s8'];
-      const blowAnim = this.anims.get('cat-blow-main');
-      const blowCycleDuration = (blowAnim.frames.length / blowAnim.frameRate) * 1000;
-
-      const playHatSequence = (index) => {
-        if (index >= hatFrames.length) {
-          this.cat.stop();
-          const y = gameHeight;
-          this.tweens.add({
-            targets: [this.catHat],
-            y,
-            ease: Phaser.Math.Easing.Cubic.In,
-            duration: 500,
-            onComplete: () => {
-              this.cameras.main.shake(200, 0.01);
-              this.time.delayedCall(250, () => {
-                this.monkey.destroy();
-
-                this.catHat.play('cat-hat-outro');
-                this.catHat.once(Phaser.Animations.Events.ANIMATION_COMPLETE, (animation) => {
-                  if (animation.key !== 'cat-hat-outro') {
-                    return;
-                  }
-                  this.cat.play('idle');
-                });
-              });
-            }
-          });
-          return;
-        }
-
-        this.catHat.setFrame(hatFrames[index]);
-
-        const isThirdFrame = index === 2;
-        const delay = isThirdFrame ? blowCycleDuration * 2 : blowCycleDuration;
-
-        this.time.delayedCall(delay, () => playHatSequence(index + 1));
-      };
-
       this.catHat.play('cat-hat-intro');
-      this.catHat.once(Phaser.Animations.Events.ANIMATION_COMPLETE, (animation) => {
-        if (!animation || animation.key !== 'cat-hat-intro') {
-          return;
-        }
-        playHatSequence(0);
+      this.catHat.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
+        const hatFrames = ['atlas_s5', 'atlas_s6', 'atlas_s7', 'atlas_s8'];
+        let hatFrameIndex = 0;
+        let blowCycles = 0;
+
+        this.catHat.setFrame(hatFrames[hatFrameIndex]);
+        hatFrameIndex += 1;
+
+        const onBlowCycle = () => {
+          const isThirdFrame = hatFrameIndex === 3;
+          if (isThirdFrame) {
+            blowCycles += 1;
+            if (blowCycles < 2) {
+              return;
+            }
+          }
+
+          if (hatFrameIndex >= hatFrames.length) {
+            this.cat.off('animationrepeat-cat-blow-main', onBlowCycle);
+            this.cat.stop();
+            const y = gameHeight;
+            this.tweens.add({
+              targets: [this.catHat],
+              y,
+              ease: Phaser.Math.Easing.Cubic.In,
+              duration: 500,
+              onComplete: () => {
+                this.cameras.main.shake(200, 0.01);
+                this.time.delayedCall(250, () => {
+                  this.monkey.destroy();
+
+                  this.catHat.play('cat-hat-outro');
+                  this.catHat.once(Phaser.Animations.Events.ANIMATION_COMPLETE, (animation) => {
+                    if (animation.key !== 'cat-hat-outro') {
+                      return;
+                    }
+                    this.cat.play('idle');
+                  });
+                });
+              }
+            });
+            return;
+          }
+
+          this.catHat.setFrame(hatFrames[hatFrameIndex]);
+          hatFrameIndex += 1;
+        };
+
+        this.cat.on('animationrepeat-cat-blow-main', onBlowCycle);
       });
     };
 
