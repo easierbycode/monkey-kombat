@@ -49,8 +49,9 @@ export default class Game extends Phaser.Scene {
     }
 
     this.cat = this.add.sprite(0, gameHeight, 'cat-idle', 'atlas_s0');
-    this.cat.setOrigin(0, 1);
+    this.cat.setOrigin(1, 1);
     this.cat.setScale(6);
+    this.cat.setX(this.cat.displayWidth);
     this.cat.play('idle');
   }
 }
