@@ -178,7 +178,6 @@ export default class Game extends Phaser.Scene {
       if (this.hatSequenceStarted) {
         return;
       }
-
       this.hatSequenceStarted = true;
 
       this.cat.play('cat-blow-main');
@@ -192,27 +191,19 @@ export default class Game extends Phaser.Scene {
       this.catHat.setDepth(5);
 
       this.catHat.play('cat-hat-intro');
-      this.catHat.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
+      this.catHat.once(Phaser.Animations.Events.ANIMATION_COMPLETE, (introAnimation) => {
+        if (introAnimation.key !== 'cat-hat-intro') {
+          return;
+        }
+
         const hatFrames = ['atlas_s5', 'atlas_s6', 'atlas_s7', 'atlas_s8'];
-        let hatFrameIndex = 0;
-        let blowCycles = 0;
+        const blowAnim = this.anims.get('cat-blow-main');
+        const blowCycleDuration = (blowAnim.frames.length / blowAnim.frameRate) * 1000;
 
-        this.catHat.setFrame(hatFrames[hatFrameIndex]);
-        hatFrameIndex += 1;
-
-        const onBlowCycle = () => {
-          const isThirdFrame = hatFrameIndex === 3;
-          if (isThirdFrame) {
-            blowCycles += 1;
-            if (blowCycles < 2) {
-              return;
-            }
-          }
-
-          if (hatFrameIndex >= hatFrames.length) {
-            this.cat.off('animationrepeat-cat-blow-main', onBlowCycle);
+        const playHatSequence = (index) => {
+          if (index >= hatFrames.length) {
             this.cat.stop();
-            const y = gameHeight;
+            const y = this.game.config.height;
             this.tweens.add({
               targets: [this.catHat],
               y,
@@ -222,13 +213,11 @@ export default class Game extends Phaser.Scene {
                 this.cameras.main.shake(200, 0.01);
                 this.time.delayedCall(250, () => {
                   this.monkey.destroy();
-
                   this.catHat.play('cat-hat-outro');
-                  this.catHat.once(Phaser.Animations.Events.ANIMATION_COMPLETE, (animation) => {
-                    if (animation.key !== 'cat-hat-outro') {
-                      return;
+                  this.catHat.once(Phaser.Animations.Events.ANIMATION_COMPLETE, (outroAnimation) => {
+                    if (outroAnimation.key === 'cat-hat-outro') {
+                      this.cat.play('idle');
                     }
-                    this.cat.play('idle');
                   });
                 });
               }
@@ -236,11 +225,16 @@ export default class Game extends Phaser.Scene {
             return;
           }
 
-          this.catHat.setFrame(hatFrames[hatFrameIndex]);
-          hatFrameIndex += 1;
+          this.catHat.setFrame(hatFrames[index]);
+
+          const isThirdFrame = index === 2;
+          const delay = isThirdFrame ? blowCycleDuration * 2 : blowCycleDuration;
+
+          this.time.delayedCall(delay, () => playHatSequence(index + 1));
         };
 
-        this.cat.on('animationrepeat-cat-blow-main', onBlowCycle);
+        // Start the sequence
+        playHatSequence(0);
       });
     };
 
