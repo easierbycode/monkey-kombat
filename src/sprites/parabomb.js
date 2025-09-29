@@ -98,7 +98,7 @@ export default class Parabomb extends Phaser.Physics.Arcade.Sprite {
             return;
         }
 
-        if ( this.body.blocked.down && this.anims.getCurrentKey() === 'fall' ) {
+        if ( this.body.blocked.down && this.anims.currentAnim.key === 'fall' ) {
             this.setOffset( -19, -16 );
             this.setGravityY( 800 );
             this.on('animationcomplete', (anim, frame) => this.emit('animationcomplete_' + anim.key, anim, frame));
