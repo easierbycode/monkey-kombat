@@ -56,7 +56,7 @@ export default class Game extends Phaser.Scene {
     }
 
     const idleLoopDuration = idleFrames.length / idleFrameRate;
-    const idlePrepRepeat = Math.max(0, Math.ceil(4 / idleLoopDuration) - 1);
+    const idlePrepRepeat = Math.max(0, Math.ceil(2.5 / idleLoopDuration) - 1);
 
     if (!this.anims.exists('cat-idle-prep')) {
       this.anims.create({
