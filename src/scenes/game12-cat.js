@@ -10,6 +10,7 @@ export default class Game extends Phaser.Scene {
     this.load.atlas('cat-teleport', './assets/cat-teleport.png', './assets/cat-teleport.json');
     this.load.atlas('cat-hat', './assets/cat-hat.png', './assets/cat-hat.json');
     this.load.atlas('cat-blow', './assets/cat-blow.png', './assets/cat-blow.json');
+    this.load.atlas('cat-fly', './assets/cat-fly.png', './assets/cat-fly.json');
     this.load.atlas('explosion', './assets/explosion.png', './assets/explosion.json');
     this.load.image('monkey', './assets/monkey.png');
     this.load.spritesheet('bone', './assets/bone.png', {
@@ -134,6 +135,19 @@ export default class Game extends Phaser.Scene {
       });
     }
 
+    if (!this.anims.exists('cat-fly')) {
+      this.anims.create({
+        key: 'cat-fly',
+        frames: this.anims.generateFrameNames('cat-fly', {
+          prefix: 'atlas_s',
+          start: 0,
+          end: 11
+        }),
+        frameRate: 12,
+        repeat: -1
+      });
+    }
+
     this.cat = this.add.sprite(0, gameHeight, 'cat-idle', 'atlas_s0');
     this.cat.setScale(6);
 
@@ -229,7 +243,43 @@ export default class Game extends Phaser.Scene {
                     this.catHat.play('cat-hat-outro');
                     this.catHat.once(Phaser.Animations.Events.ANIMATION_COMPLETE, (outroAnimation) => {
                       if (outroAnimation.key === 'cat-hat-outro') {
-                        this.cat.play('idle');
+                        this.cat.setFlipX(true);
+                        this.time.delayedCall(250, () => {
+                          this.cat.play('cat-fly');
+                          this.cat.off('animationupdate', alignCat);
+                          this.cat.off('animationcomplete', alignCat);
+                          this.cat.setOrigin(0.5, 1);
+
+                          const floatAndOscillate = () => {
+                            if (!this.cat.active) return;
+
+                            if (this.cat.y < -this.cat.displayHeight) {
+                              if (this.cat.active) this.cat.destroy();
+                              if (this.catHat.active) this.catHat.destroy();
+                              return;
+                            }
+
+                            const targetX = this.cat.flipX
+                              ? 0 - this.cat.displayWidth / 2
+                              : this.game.config.width + this.cat.displayWidth / 2;
+
+                            this.tweens.add({
+                              targets: this.cat,
+                              x: targetX,
+                              y: '-=200',
+                              duration: 2500,
+                              ease: 'Sine.easeInOut',
+                              onComplete: () => {
+                                if (this.cat.active) {
+                                  this.cat.setFlipX(!this.cat.flipX);
+                                  floatAndOscillate();
+                                }
+                              }
+                            });
+                          };
+
+                          floatAndOscillate();
+                        });
                       }
                     });
                   });
