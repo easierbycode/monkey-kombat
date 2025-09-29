@@ -255,7 +255,6 @@ export default class Game extends Phaser.Scene {
 
                             if (this.cat.y < -this.cat.displayHeight) {
                               if (this.cat.active) this.cat.destroy();
-                              if (this.catHat.active) this.catHat.destroy();
                               return;
                             }
 
