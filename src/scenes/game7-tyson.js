@@ -108,6 +108,7 @@ export default class Game extends Phaser.Scene {
                     onComplete: () => {
                         explosionFlash.destroy();
                         head.destroy();
+                        document.dispatchEvent(new CustomEvent('enemy-defeated'));
                     }
                 });
             }

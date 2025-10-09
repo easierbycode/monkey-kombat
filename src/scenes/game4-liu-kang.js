@@ -128,6 +128,7 @@ export default class Game extends Phaser.Scene {
         750,
         () => {
           this.monkey.destroy();
+          document.dispatchEvent(new CustomEvent('enemy-defeated'));
         }
       );
 

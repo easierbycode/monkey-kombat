@@ -35,6 +35,7 @@ export default class Beavis extends Phaser.Physics.Arcade.Sprite {
         // Once the 'saw' animation completes, destroy the victim and start the 'headBang' animation
         this.on('animationcomplete_saw', () => {
             this.victim.destroy();
+            document.dispatchEvent(new CustomEvent('enemy-defeated'));
             this.play('headBang');
         });
 

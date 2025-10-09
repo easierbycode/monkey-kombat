@@ -80,7 +80,10 @@ export default class Game extends Phaser.Scene {
 
   hitEnemy(bullet, enemy) {
     let isDead = enemy.damage(bullet);
-    if (isDead) this.cyrax.victoryDance();
+    if (isDead) {
+      this.cyrax.victoryDance();
+      document.dispatchEvent(new CustomEvent('enemy-defeated'));
+    }
     bullet.destroy();
   }
 }
