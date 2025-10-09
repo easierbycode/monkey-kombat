@@ -240,6 +240,7 @@ export default class Game extends Phaser.Scene {
                   this.cameras.main.shake(200, 0.01);
                   this.time.delayedCall(250, () => {
                     this.monkey.destroy();
+                    document.dispatchEvent(new CustomEvent('enemy-defeated'));
                     this.catHat.play('cat-hat-outro');
                     this.catHat.once(Phaser.Animations.Events.ANIMATION_COMPLETE, (outroAnimation) => {
                       if (outroAnimation.key === 'cat-hat-outro') {

@@ -69,5 +69,6 @@ export default class Game extends Phaser.Scene {
   hitEnemy(bullet, enemy) {
     enemy.active = false;
     bullet.destroy(bullet, enemy);
+    document.dispatchEvent(new CustomEvent('enemy-defeated'));
   }
 }

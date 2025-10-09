@@ -187,6 +187,7 @@ export default class Animus extends Phaser.Physics.Arcade.Sprite {
             
             var destroyVictim = () => {
                 this.victim.destroy();
+                document.dispatchEvent(new CustomEvent('enemy-defeated'));
             }
             
             this.play( 'bloodyLaugh' );
