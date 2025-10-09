@@ -303,6 +303,11 @@
       display: flex;
       gap: 12px;
       align-items: center;
+      visibility: hidden;
+    }
+
+    .game-ui.visible {
+      visibility: visible;
     }
 
     .back-button {
@@ -598,6 +603,7 @@
     }
 
     const backButton = document.getElementById('backButton');
+    const gameUi = document.querySelector('.game-ui');
     const statusLabel = document.getElementById('gameStatus');
     const params = new URLSearchParams(window.location.search);
     const debugEnabled = params.get('debug') === '1';
@@ -625,6 +631,10 @@
       }
     });
 
+    document.addEventListener('monkey-exploded', () => {
+      gameUi.classList.add('visible');
+    });
+
     function launchScene(sceneIndex, { updateHistory = true } = {}) {
       const idx = Number.parseInt(sceneIndex, 10);
       if (Number.isNaN(idx)) {
@@ -646,6 +656,7 @@
       destroyGame();
       document.body.classList.remove('game-active');
       statusLabel.textContent = 'Select a fighter to begin';
+      gameUi.classList.remove('visible');
       updateUrl(null);
       characterSelect.focusCurrent();
     }
