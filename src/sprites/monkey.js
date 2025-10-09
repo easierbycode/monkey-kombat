@@ -190,6 +190,7 @@ export default class Monkey extends Phaser.Physics.Arcade.Sprite {
             this.setActive( false );
             this.setVisible( false );
             this.destroy();
+            document.dispatchEvent(new CustomEvent('monkey-exploded'));
         } else {
             (TweenMax.to(this, 0.1, {
                 tint: 16711680
