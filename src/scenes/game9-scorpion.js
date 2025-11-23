@@ -73,6 +73,7 @@ export default class Game extends Phaser.Scene {
     let isDead = enemy.damage(bullet);
     if (isDead) {
       this.scorpion.victoryDance();
+      document.dispatchEvent(new CustomEvent('enemy-defeated'));
       bullet.destroy();
     }
   }
