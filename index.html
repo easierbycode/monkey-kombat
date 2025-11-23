@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,7 +12,7 @@
     body {
       height: 100%;
     }
-    
+
     body {
       background: linear-gradient(45deg, #1a1a2e, #16213e, #0f3460);
       color: #fff;
@@ -20,7 +21,7 @@
       padding: 0;
       height: 100vh;
       overflow: hidden;
-      background-image: 
+      background-image:
         radial-gradient(circle at 25% 25%, #333 1px, transparent 1px),
         radial-gradient(circle at 75% 75%, #333 1px, transparent 1px);
       background-size: 50px 50px;
@@ -29,16 +30,22 @@
 
     h1 {
       text-align: center;
-      color: #ffd700;
-      text-shadow: 
-        0 0 5px #ffd700, 
-        0 0 10px #ffd700, 
-        0 0 20px #ff6600,
-        0 0 40px #ff6600;
-      font-size: 2.8em;
+      font-size: 3.5em;
       margin: 20px 0;
       font-weight: 900;
-      letter-spacing: 3px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+
+      /* MK Gradient Style */
+      background: linear-gradient(180deg, #fff 0%, #ffcc00 20%, #ff6600 50%, #cc0000 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: transparent;
+
+      /* Outline/Stroke simulation */
+      filter: drop-shadow(2px 2px 0px #000) drop-shadow(-1px -1px 0 #000);
+      position: relative;
     }
 
     .select-container {
@@ -59,7 +66,7 @@
       background: linear-gradient(135deg, #2c2c54, #40407a);
       border: 3px solid #ffd700;
       border-radius: 10px;
-      box-shadow: 
+      box-shadow:
         0 0 30px rgba(255, 215, 0, 0.3),
         inset 0 0 30px rgba(255, 215, 0, 0.1);
     }
@@ -84,30 +91,29 @@
 
     .character-tile:hover,
     .character-tile.selected {
-      border-color: #ffd700;
-      background: linear-gradient(135deg, #ffd700, #ff6600);
-      box-shadow: 
-        0 0 20px #ffd700,
-        0 0 40px #ffd700,
-        inset 0 0 20px rgba(255, 215, 0, 0.2);
       transform: scale(1.08);
       z-index: 10;
-    }
-
-    .character-tile:hover .character-name,
-    .character-tile.selected .character-name {
-      color: #000;
-      text-shadow: 0 0 5px #ffd700;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
     }
 
     .character-tile.selected {
-      animation: selectedPulse 1s infinite;
+      animation: borderFlash 0.1s infinite;
+      border-width: 3px;
+      border-style: solid;
     }
 
-    @keyframes selectedPulse {
-      0% { box-shadow: 0 0 20px #ffd700, 0 0 40px #ffd700, inset 0 0 20px rgba(255, 215, 0, 0.2); }
-      50% { box-shadow: 0 0 30px #ffd700, 0 0 60px #ffd700, inset 0 0 30px rgba(255, 215, 0, 0.3); }
-      100% { box-shadow: 0 0 20px #ffd700, 0 0 40px #ffd700, inset 0 0 20px rgba(255, 215, 0, 0.2); }
+    @keyframes borderFlash {
+      0% {
+        border-color: #00ff00;
+      }
+
+      50% {
+        border-color: #ffff00;
+      }
+
+      100% {
+        border-color: #00ff00;
+      }
     }
 
     .character-tile img {
@@ -151,22 +157,27 @@
       letter-spacing: 2px;
     }
 
-    .instructions {
-      color: #ccc;
-      text-align: center;
-      font-size: 0.9em;
-      margin-top: 15px;
-      opacity: 0.8;
-    }
+
 
     body.inLauncher .instructions {
       display: none;
     }
 
     @keyframes pulse {
-      0% { opacity: 0.7; transform: scale(1); }
-      50% { opacity: 1; transform: scale(1.05); }
-      100% { opacity: 0.7; transform: scale(1); }
+      0% {
+        opacity: 0.7;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 1;
+        transform: scale(1.05);
+      }
+
+      100% {
+        opacity: 0.7;
+        transform: scale(1);
+      }
     }
 
     .select-container::before,
@@ -200,32 +211,32 @@
         font-size: 1.8em;
         margin: 10px 0;
       }
-      
+
       .choose {
         font-size: 1em;
         margin: 5px 0 10px 0;
       }
-      
+
       .character-grid {
         grid-template-columns: repeat(6, 1fr);
         gap: 6px;
         padding: 10px;
         max-width: 95%;
       }
-      
+
       .select-container {
         height: calc(100vh - 80px);
       }
-      
+
       .character-tile {
         aspect-ratio: 1/1;
       }
-      
+
       .character-name {
         font-size: 0.65em;
         padding: 4px 2px;
       }
-      
+
       .select-container::before,
       .select-container::after {
         width: 60px;
@@ -244,11 +255,11 @@
         gap: 10px;
         max-width: 95%;
       }
-      
+
       h1 {
         font-size: 2em;
       }
-      
+
       .choose {
         font-size: 1em;
       }
@@ -339,78 +350,78 @@
     }
   </style>
   <script src="https://assets.codepen.io/11817390/TweenMax.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/phaser@4.0.0-rc.5/dist/phaser.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdn.jsdelivr.net/npm/phaser@4.0.0-rc.5/dist/phaser.min.js" crossorigin="anonymous"
+    referrerpolicy="no-referrer"></script>
 </head>
+
 <body>
   <div class="select-container" id="selectContainer">
     <h1>MONKEY KOMBAT</h1>
     <div class="choose">CHOOSE YOUR FIGHTER</div>
-    
+
     <div class="character-grid" id="characterGrid">
       <a href="#scene-0" class="character-tile" data-index="0" data-scene="0">
         <img src="assets/cyrax.png" alt="Cyrax">
         <div class="character-name">CYRAX</div>
       </a>
-      
+
       <a href="#scene-1" class="character-tile" data-index="1" data-scene="1">
         <img src="assets/parabomb.png" alt="Parabomb">
         <div class="character-name">PARABOMB</div>
       </a>
-      
+
       <a href="#scene-2" class="character-tile" data-index="2" data-scene="2">
         <img src="assets/animus.png" alt="Animus">
         <div class="character-name">ANIMUS</div>
       </a>
-      
+
       <a href="#scene-3" class="character-tile" data-index="3" data-scene="3">
         <img src="assets/liu-kang.png" alt="Liu Kang">
         <div class="character-name">LIU KANG</div>
       </a>
-      
+
       <a href="#scene-4" class="character-tile" data-index="4" data-scene="4">
         <img src="assets/rainbow-cloud.png" alt="Rainbow Dash">
         <div class="character-name">RAINBOW DASH</div>
       </a>
-      
+
       <a href="#scene-5" class="character-tile" data-index="5" data-scene="5">
         <img src="assets/bowser.png" alt="Bowser">
         <div class="character-name">BOWSER</div>
       </a>
-      
+
       <a href="#scene-6" class="character-tile" data-index="6" data-scene="6">
         <img src="assets/tyson.png" alt="Mike Tyson">
         <div class="character-name">MIKE TYSON</div>
       </a>
-      
+
       <a href="#scene-7" class="character-tile" data-index="7" data-scene="7">
         <img src="assets/beavis.png" alt="Beavis">
         <div class="character-name">BEAVIS</div>
       </a>
-      
+
       <a href="#scene-8" class="character-tile" data-index="8" data-scene="8">
         <img src="assets/game_asset.png" alt="Scorpion">
         <div class="character-name">SCORPION</div>
       </a>
-      
+
       <a href="#scene-9" class="character-tile" data-index="9" data-scene="9">
         <img src="assets/santa.png" alt="Santa">
         <div class="character-name">SANTA</div>
       </a>
-      
+
       <a href="#scene-10" class="character-tile" data-index="10" data-scene="10">
         <img src="assets/sonic.png" alt="Sonic">
         <div class="character-name">SONIC</div>
       </a>
-      
+
       <a href="#scene-11" class="character-tile" data-index="11" data-scene="11">
         <img src="assets/cat-idle.png" alt="Cat">
         <div class="character-name">CAT</div>
       </a>
     </div>
 
-    <div class="instructions">
-      Use ARROW KEYS to navigate • ENTER or SPACE to select • ESC to return from battle
-    </div>
+
   </div>
 
   <div class="game-wrapper" id="gameWrapper" aria-live="polite">
@@ -679,4 +690,5 @@
     }
   </script>
 </body>
+
 </html>
