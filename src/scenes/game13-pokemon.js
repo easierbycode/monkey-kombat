@@ -152,6 +152,37 @@ export default class Game extends Phaser.Scene {
           duration: 350,
           ease: 'Quad.in',
           onComplete: () => {
+            this.onPokeballImpact(pokeball);
+          }
+        });
+      }
+    });
+  }
+
+  onPokeballImpact(pokeball) {
+    if (!pokeball || !pokeball.active || !this.monkey) {
+      return;
+    }
+
+    const hoverX = this.monkey.x - (this.monkey.displayWidth * 0.25);
+    const hoverY = this.monkey.y - this.monkey.displayHeight - 20;
+    const bounceX = hoverX + 45;
+    const bounceY = hoverY - 70;
+
+    this.tweens.add({
+      targets: pokeball,
+      x: bounceX,
+      y: bounceY,
+      duration: 200,
+      ease: 'Quad.out',
+      onComplete: () => {
+        this.tweens.add({
+          targets: pokeball,
+          x: hoverX,
+          y: hoverY,
+          duration: 220,
+          ease: 'Quad.inOut',
+          onComplete: () => {
             this.handlePokeballLanding(pokeball);
           }
         });
@@ -182,6 +213,8 @@ export default class Game extends Phaser.Scene {
     if (this.captureTween && this.captureTween.isPlaying()) {
       this.captureTween.stop();
     }
+
+    this.monkey.setOrigin(0.5, 0.5);
 
     this.captureTween = this.tweens.add({
       targets: this.monkey,
