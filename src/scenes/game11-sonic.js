@@ -288,7 +288,10 @@ export default class Game extends Phaser.Scene {
             this.cameras.main.shake(400, finalShakeIntensity, false);
             
             // Now damage the monkey just before Sonic speeds off
-            this.monkey.damage({ damagePoints: 10 });
+            const isDead = this.monkey.damage({ damagePoints: 10 });
+            if (isDead) {
+                document.dispatchEvent(new CustomEvent('enemy-defeated'));
+            }
         });
 
         // Initialize explosion sound
