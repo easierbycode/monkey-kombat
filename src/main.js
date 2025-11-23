@@ -11,6 +11,7 @@ import Scorpion from './scenes/game9-scorpion.js';
 import Santa from './scenes/game10-santa.js';
 import Game11 from './scenes/game11-sonic.js';
 import Game12 from './scenes/game12-cat.js';
+import Game13 from './scenes/game13-pokemon.js';
 
 window.Phaser = Phaser;
 
@@ -27,6 +28,7 @@ const scenes = [
   Santa,
   Game11,
   Game12,
+  Game13,
 ];
 
 let gameInstance = null;
