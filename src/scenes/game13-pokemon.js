@@ -329,6 +329,7 @@ export default class Game extends Phaser.Scene {
       this.monkey.setActive(true);
       this.playExplosionFlash(this.monkey.x, this.monkey.y);
       this.monkey.destroy();
+      document.dispatchEvent(new CustomEvent('enemy-defeated'));
     }
 
     this.fadeOutBloodEffects();
