@@ -3,6 +3,8 @@ import Monkey from '../sprites/monkey.js';
 const RED_ATLAS_KEY = 'red-walk-right';
 const WALK_ANIM_KEY = 'pokemon-red-walk';
 const EXPLOSION_FLASH_FRAME = 'muzzleflash2';
+const BLOOD_SPLAT_ANIM = 'bloodSplatter';
+const BLOOD_PUDDLE_ANIM = 'bloodPuddle';
 
 export default class Game extends Phaser.Scene {
   constructor() {
@@ -19,6 +21,18 @@ export default class Game extends Phaser.Scene {
     this.load.spritesheet('blood', './assets/blood.png', {
       frameWidth: 88,
       frameHeight: 71,
+      endFrame: 9
+    });
+
+    this.load.spritesheet('bloodPuddle', './assets/blood-puddle.png', {
+      frameWidth: 185,
+      frameHeight: 187,
+      endFrame: 4
+    });
+
+    this.load.spritesheet('bloodSplat', './assets/blood-splat.png', {
+      frameWidth: 158,
+      frameHeight: 176,
       endFrame: 9
     });
 
@@ -49,6 +63,11 @@ export default class Game extends Phaser.Scene {
     this.monkeyCaptureScale = this.monkey.scaleX;
     this.captureTween = null;
     this.explosionFlash = null;
+    this.bloodEffectsActive = false;
+    this.bloodSplatSprite = null;
+    this.bloodPuddleSprite = null;
+    this.bloodSource = null;
+    this.pokeballDropped = false;
 
     this.createAnimations();
 
@@ -100,6 +119,30 @@ export default class Game extends Phaser.Scene {
           end: 5
         }),
         frameRate: 15,
+        repeat: -1
+      });
+    }
+
+    if (!this.anims.exists(BLOOD_SPLAT_ANIM)) {
+      this.anims.create({
+        key: BLOOD_SPLAT_ANIM,
+        frames: this.anims.generateFrameNumbers('bloodSplat', {
+          start: 0,
+          end: 9
+        }),
+        frameRate: 45,
+        repeat: -1
+      });
+    }
+
+    if (!this.anims.exists(BLOOD_PUDDLE_ANIM)) {
+      this.anims.create({
+        key: BLOOD_PUDDLE_ANIM,
+        frames: this.anims.generateFrameNumbers('bloodPuddle', {
+          start: 0,
+          end: 4
+        }),
+        frameRate: 20,
         repeat: -1
       });
     }
@@ -214,7 +257,17 @@ export default class Game extends Phaser.Scene {
       this.captureTween.stop();
     }
 
-    this.monkey.setOrigin(0.5, 0.5);
+    const originalOriginX = this.monkey.originX;
+    const originalOriginY = this.monkey.originY;
+
+    const alignMonkeyToCenter = () => {
+      if (this.monkey && this.monkey.active) {
+        this.monkey.setOrigin(0.5, 0.5);
+      }
+    };
+
+    alignMonkeyToCenter();
+    this.time.delayedCall(16, alignMonkeyToCenter);
 
     this.captureTween = this.tweens.add({
       targets: this.monkey,
@@ -226,6 +279,10 @@ export default class Game extends Phaser.Scene {
       duration: 1200,
       ease: 'Cubic.easeIn',
       onComplete: () => {
+        if (this.monkey && this.monkey.active) {
+          this.monkey.setOrigin(originalOriginX, originalOriginY);
+        }
+        this.spawnBloodEffectsOnRed();
         this.startMonkeySpinSequence();
       }
     });
@@ -274,10 +331,8 @@ export default class Game extends Phaser.Scene {
       this.monkey.destroy();
     }
 
-    if (this.activePokeball) {
-      this.activePokeball.destroy();
-      this.activePokeball = null;
-    }
+    this.fadeOutBloodEffects();
+    this.dropPokeballToGround();
   }
 
   playExplosionFlash(x, y) {
@@ -296,10 +351,135 @@ export default class Game extends Phaser.Scene {
     emitter.explode(1, x, y);
   }
 
+  spawnBloodEffectsOnRed() {
+    if (this.bloodEffectsActive) {
+      return;
+    }
+
+    const source = this.activePokeball || this.red;
+    if (!source) {
+      return;
+    }
+
+    this.bloodEffectsActive = true;
+    this.bloodSource = source;
+
+    const halfHeight = source.displayHeight * 0.5;
+
+    const splatX = source.x;
+    const splatY = source.y - halfHeight - 10;
+    this.bloodSplatSprite = this.add.sprite(splatX, splatY, 'bloodSplat', 0);
+    this.bloodSplatSprite.setOrigin(0.5, 0);
+    this.bloodSplatSprite.setScale(0.5);
+    this.bloodSplatSprite.setDepth((source.depth || 1) + 1);
+    this.bloodSplatSprite.play(BLOOD_SPLAT_ANIM);
+
+    const puddleX = source.x;
+    const puddleY = source.y + halfHeight;
+    this.bloodPuddleSprite = this.add.sprite(puddleX, puddleY, 'bloodPuddle', 0);
+    this.bloodPuddleSprite.setOrigin(0.5, 1);
+    this.bloodPuddleSprite.setScale(0.5);
+    this.bloodPuddleSprite.setDepth(source.depth || 1);
+    this.bloodPuddleSprite.play(BLOOD_PUDDLE_ANIM);
+  }
+
+  fadeOutBloodEffects() {
+    const fadeSprite = (sprite) => {
+      if (!sprite || !sprite.active) {
+        return;
+      }
+      this.tweens.add({
+        targets: sprite,
+        alpha: 0,
+        duration: 400,
+        ease: 'Quad.in',
+        onComplete: () => sprite.destroy()
+      });
+    };
+
+    fadeSprite(this.bloodSplatSprite);
+    fadeSprite(this.bloodPuddleSprite);
+
+    this.bloodEffectsActive = false;
+    this.bloodSplatSprite = null;
+    this.bloodPuddleSprite = null;
+    this.bloodSource = null;
+  }
+
+  dropPokeballToGround() {
+    const pokeball = this.activePokeball;
+    if (!pokeball || !pokeball.active || this.pokeballDropped) {
+      return;
+    }
+
+    this.pokeballDropped = true;
+    const groundY = this.game.config.height - (pokeball.displayHeight * 0.5);
+
+    this.tweens.add({
+      targets: pokeball,
+      y: groundY,
+      duration: 500,
+      ease: 'Cubic.easeIn',
+      onComplete: () => {
+        this.tweens.add({
+          targets: pokeball,
+          y: groundY - 15,
+          duration: 200,
+          yoyo: true,
+          ease: 'Quad.out',
+          onComplete: () => this.rollPokeballLeft(groundY)
+        });
+      }
+    });
+  }
+
+  rollPokeballLeft(groundY) {
+    const pokeball = this.activePokeball;
+    if (!pokeball || !pokeball.active) {
+      return;
+    }
+
+    this.tweens.add({
+      targets: pokeball,
+      x: pokeball.x - 100,
+      angle: pokeball.angle - 360,
+      y: groundY,
+      duration: 900,
+      ease: 'Sine.easeOut'
+    });
+  }
+
   computeRedTargetX() {
     const monkeyOriginOffset = this.monkey.displayWidth * this.monkey.originX;
     const monkeyLeftEdge = this.monkey.x - monkeyOriginOffset;
     const redOriginOffset = this.red.displayWidth * this.red.originX;
     return monkeyLeftEdge - 20 - redOriginOffset;
+  }
+
+  updateBloodEffectPositions() {
+    if (!this.bloodEffectsActive) {
+      return;
+    }
+
+    const source = this.activePokeball || this.bloodSource || this.red;
+    if (!source) {
+      return;
+    }
+
+    const halfHeight = source.displayHeight * 0.5;
+
+    if (this.bloodSplatSprite && this.bloodSplatSprite.active) {
+      this.bloodSplatSprite.setPosition(source.x, source.y - halfHeight - 10);
+      this.bloodSplatSprite.setDepth((source.depth || 1) + 1);
+    }
+
+    if (this.bloodPuddleSprite && this.bloodPuddleSprite.active) {
+      this.bloodPuddleSprite.setPosition(source.x, source.y + halfHeight);
+      this.bloodPuddleSprite.setDepth(source.depth || 1);
+    }
+  }
+
+  update() {
+    this.updateBloodEffectPositions();
   }
 }
