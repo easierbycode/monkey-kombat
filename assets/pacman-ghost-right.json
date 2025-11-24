@@ -1,0 +1,55 @@
+{
+  "frames": {
+    "atlas_s0": {
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 14,
+        "h": 14
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 14,
+        "h": 14
+      },
+      "sourceSize": {
+        "w": 14,
+        "h": 14
+      }
+    },
+    "atlas_s1": {
+      "frame": {
+        "x": 14,
+        "y": 0,
+        "w": 14,
+        "h": 14
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 14,
+        "h": 14
+      },
+      "sourceSize": {
+        "w": 14,
+        "h": 14
+      }
+    }
+  },
+  "meta": {
+    "app": "Evil Invaders Atlas Builder",
+    "version": "1.0",
+    "image": "atlas.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 28,
+      "h": 14
+    },
+    "scale": "1"
+  }
+}
