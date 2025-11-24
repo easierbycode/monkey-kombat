@@ -25,6 +25,7 @@ export default class Game extends Phaser.Scene {
     this.load.image('pacman-pretzel', './assets/pacman-pretzel.png');
     this.load.image('pacman-cherry', './assets/pacman-cherry.png');
     this.load.image('pacman-banana', './assets/pacman-banana.png');
+    this.load.image('pacman-key', './assets/pacman-key.png');
 
     this.load.atlas('pac-delorian', './assets/pac-delorian.png', './assets/pac-delorian.json');
 
@@ -49,6 +50,7 @@ export default class Game extends Phaser.Scene {
     this.completedThrows = 0;
     this.dropStarted = false;
     this.isThrowRunning = false;
+    this.ghostExiting = false;
 
     this.createMonkey();
     this.createItems();
@@ -221,7 +223,7 @@ export default class Game extends Phaser.Scene {
 
     this.isThrowRunning = true;
     const throwIndex = this.completedThrows;
-    const banana = this.createBananaProjectile();
+    const banana = this.createBananaProjectile(throwIndex);
     const pickupY = this.ghostBaseY - 40;
     const attachY = this.ghostBaseY - (this.ghost.displayHeight * 0.4);
 
@@ -264,8 +266,9 @@ export default class Game extends Phaser.Scene {
     });
   }
 
-  createBananaProjectile() {
-    const banana = this.add.sprite(this.bananaHolderBaseX, this.bananaHolderBaseY, 'pacman-banana');
+  createBananaProjectile(throwIndex) {
+    const texture = throwIndex >= TOTAL_BANANA_THROWS - 1 ? 'pacman-key' : 'pacman-banana';
+    const banana = this.add.sprite(this.bananaHolderBaseX, this.bananaHolderBaseY, texture);
     banana.setScale(this.itemScale);
     banana.setDepth(this.monkey.depth + 3);
     banana.setOrigin(0.5, 1);
@@ -302,7 +305,8 @@ export default class Game extends Phaser.Scene {
   handleBananaImpact(banana, throwIndex) {
     this.flashMonkeyDamage();
 
-    const landX = this.monkey.x - (this.monkey.displayWidth * 0.75);
+    const offset = throwIndex >= TOTAL_BANANA_THROWS - 1 ? 0.6 : 0.75;
+    const landX = this.monkey.x - (this.monkey.displayWidth * offset);
     const bounceY = this.monkeyHitY + 40;
 
     this.tweens.add({
@@ -336,7 +340,7 @@ export default class Game extends Phaser.Scene {
     }
 
     if (this.completedThrows >= TOTAL_BANANA_THROWS) {
-      this.time.delayedCall(700, () => this.dropPacDelorian());
+      this.sendGhostOffscreen();
       return;
     }
 
@@ -346,6 +350,9 @@ export default class Game extends Phaser.Scene {
   restockBananaForNextThrow() {
     this.bananaHolder.setAlpha(0);
     this.bananaHolder.setPosition(this.bananaHolderBaseX, this.bananaHolderBaseY);
+    const nextIndex = this.completedThrows;
+    const holderTexture = nextIndex >= TOTAL_BANANA_THROWS - 1 ? 'pacman-key' : 'pacman-banana';
+    this.bananaHolder.setTexture(holderTexture);
 
     this.tweens.add({
       targets: this.bananaHolder,
@@ -389,6 +396,31 @@ export default class Game extends Phaser.Scene {
     }
     this.monkey.setTintFill(0xff0000);
     this.time.delayedCall(120, () => this.monkey.clearTint());
+  }
+
+  sendGhostOffscreen() {
+    if (this.ghostExiting) {
+      return;
+    }
+    this.ghostExiting = true;
+
+    if (!this.ghost) {
+      this.time.delayedCall(400, () => this.dropPacDelorian());
+      return;
+    }
+
+    const exitX = this.game.config.width + this.ghost.displayWidth * 1.2;
+    this.ghost.play(GHOST_RIGHT_ANIM, true);
+
+    this.tweens.add({
+      targets: this.ghost,
+      x: exitX,
+      duration: 700,
+      ease: 'Sine.easeIn',
+      onComplete: () => {
+        this.time.delayedCall(500, () => this.dropPacDelorian());
+      }
+    });
   }
 
   dropPacDelorian() {
