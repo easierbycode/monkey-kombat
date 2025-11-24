@@ -156,11 +156,14 @@ export default class Game extends Phaser.Scene {
         this.time.addEvent({
             delay: 16,
             callback: () => {
-                if (Phaser.Geom.Intersects.RectangleToRectangle(
+                if (bullet.active && Phaser.Geom.Intersects.RectangleToRectangle(
                     bullet.getBounds(),
                     this.monkey.getBounds()
                 )) {
-                    this.monkey.damage(10);
+                    const isDead = this.monkey.damage(10);
+                    if (isDead) {
+                        document.dispatchEvent(new CustomEvent('enemy-defeated'));
+                    }
                     bullet.destroy();
                 }
             },
