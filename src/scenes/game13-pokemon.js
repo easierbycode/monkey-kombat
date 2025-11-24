@@ -57,6 +57,7 @@ export default class Game extends Phaser.Scene {
       y: gameHeight
     });
     this.monkey.x -= this.monkey.displayWidth / 2;
+    this.monkeyHeight = this.monkey.displayHeight;
     this.pokeballThrown = false;
     this.activePokeball = null;
     this.monkeySpinSprite = null;
@@ -303,7 +304,7 @@ export default class Game extends Phaser.Scene {
     }
 
     this.monkeySpinSprite = this.add.sprite(pokeball.x, pokeball.y, 'spin', 'spin_0');
-    const spinScale = pokeball.displayWidth / this.monkeySpinSprite.width;
+    const spinScale = this.monkeyHeight / this.monkeySpinSprite.height;
     this.monkeySpinSprite.setScale(spinScale);
     this.monkeySpinSprite.setDepth((this.monkey.depth || 1) + 2);
     this.monkeySpinSprite.play('monkey-spin');
@@ -371,7 +372,8 @@ export default class Game extends Phaser.Scene {
     const splatY = source.y - halfHeight - 10;
     this.bloodSplatSprite = this.add.sprite(splatX, splatY, 'bloodSplat', 0);
     this.bloodSplatSprite.setOrigin(0.5, 0);
-    this.bloodSplatSprite.setScale(0.5);
+    const bloodSplatScale = this.monkeyHeight / this.bloodSplatSprite.height;
+    this.bloodSplatSprite.setScale(bloodSplatScale);
     this.bloodSplatSprite.setDepth((source.depth || 1) + 1);
     this.bloodSplatSprite.play(BLOOD_SPLAT_ANIM);
 
@@ -379,7 +381,8 @@ export default class Game extends Phaser.Scene {
     const puddleY = source.y + halfHeight;
     this.bloodPuddleSprite = this.add.sprite(puddleX, puddleY, 'bloodPuddle', 0);
     this.bloodPuddleSprite.setOrigin(0.5, 1);
-    this.bloodPuddleSprite.setScale(0.5);
+    const bloodPuddleScale = this.monkeyHeight / this.bloodPuddleSprite.height;
+    this.bloodPuddleSprite.setScale(bloodPuddleScale);
     this.bloodPuddleSprite.setDepth(source.depth || 1);
     this.bloodPuddleSprite.play(BLOOD_PUDDLE_ANIM);
   }
