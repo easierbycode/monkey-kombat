@@ -324,9 +324,10 @@ export default class Game extends Phaser.Scene {
       this.monkeySpinSprite = null;
     }
 
-    this.monkeySpinSprite = this.add.sprite(pokeball.x, pokeball.y, 'spin', 'spin_0');
-    const spinTargetHeight = this.getEffectTargetHeight();
-    const spinScale = spinTargetHeight / this.monkeySpinSprite.height;
+    this.monkeySpinSprite = this.add.sprite(pokeball.x, pokeball.y + 8, 'spin', 'spin_0');
+    const spinTargetHeight = pokeball.displayHeight;
+    // const spinScale = spinTargetHeight / this.monkeySpinSprite.height;
+    const spinScale = (spinTargetHeight / this.monkeySpinSprite.height) * 0.8;
     this.monkeySpinSprite.setScale(spinScale);
     const spinDepth = (this.monkey.depth || 1) + 1;
     this.monkeySpinSprite.setDepth(spinDepth);
