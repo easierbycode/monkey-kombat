@@ -74,6 +74,7 @@ export default class Game extends Phaser.Scene {
     this.pokeballFlipTween = null;
     this.pokeballBaseScaleX = null;
     this.pokeballBaseScaleY = null;
+    this.pokeballPartsEmitted = false;
     this.pokeballDropped = false;
 
     this.createAnimations();
@@ -139,6 +140,16 @@ export default class Game extends Phaser.Scene {
         }),
         frameRate: 45,
         repeat: 0
+      });
+    }
+
+    if (!this.anims.exists('bloodAnimation')) {
+      this.anims.create({
+        key: 'bloodAnimation',
+        frames: this.anims.generateFrameNumbers('blood', { start: 0, end: 9 }),
+        frameRate: 20,
+        repeat: 0,
+        hideOnComplete: true
       });
     }
 
@@ -468,7 +479,16 @@ export default class Game extends Phaser.Scene {
       angle: pokeball.angle - 360,
       y: groundY,
       duration: 900,
-      ease: 'Sine.easeOut'
+      ease: 'Sine.easeOut',
+      onComplete: () => this.finishPokeballLanding(groundY)
+    });
+  }
+
+  finishPokeballLanding(groundY) {
+    this.time.delayedCall(140, () => {
+      this.shakeCameraLight();
+      this.playPokeballBloodBurst(groundY);
+      this.emitPokeballParts(groundY);
     });
   }
 
@@ -541,6 +561,72 @@ export default class Game extends Phaser.Scene {
     const baseX = this.pokeballBaseScaleX ?? this.activePokeball._baseScaleX ?? Math.abs(this.activePokeball.scaleX);
     const baseY = this.pokeballBaseScaleY ?? this.activePokeball._baseScaleY ?? this.activePokeball.scaleY;
     this.activePokeball.setScale(baseX, baseY);
+  }
+
+  emitPokeballParts(groundY) {
+    if (this.pokeballPartsEmitted) {
+      return;
+    }
+    const pokeball = this.activePokeball;
+    if (!pokeball || !pokeball.active) {
+      return;
+    }
+
+    this.pokeballPartsEmitted = true;
+    const emitX = pokeball.x;
+    const emitY = groundY ?? pokeball.y;
+
+    const bones = this.add.particles(0, 0, 'bone', {
+      frame: [0, 1, 2, 3, 4, 5, 6, 7],
+      speed: 900,
+      lifespan: 900,
+      gravityY: 1400,
+      quantity: 16,
+      scale: 2,
+      rotate: { min: -180, max: 180 },
+      emitting: false
+    });
+    bones.explode(16, emitX, emitY);
+
+    const muscles = this.add.particles(0, 0, 'muscle', {
+      frame: [0, 1, 2, 3, 4, 5, 6, 7],
+      speed: 1400,
+      lifespan: 1000,
+      gravityY: 1600,
+      quantity: 24,
+      scale: 2.5,
+      rotate: { min: -180, max: 180 },
+      emitting: false
+    });
+    muscles.explode(24, emitX, emitY);
+
+    const cleanup = () => {
+      bones.destroy();
+      muscles.destroy();
+    };
+    this.time.delayedCall(1200, cleanup);
+  }
+
+  playPokeballBloodBurst(groundY) {
+    const pokeball = this.activePokeball;
+    if (!pokeball || !pokeball.active) {
+      return;
+    }
+
+    const blood = this.add.sprite(pokeball.x, groundY ?? pokeball.y, 'blood', 0);
+    const effectHeight = this.getEffectTargetHeight();
+    const bloodScale = effectHeight / 71; // blood frame height
+    blood.setScale(bloodScale);
+    blood.setDepth((pokeball.depth || 1) + 1);
+    blood.play('bloodAnimation');
+    blood.once('animationcomplete', () => blood.destroy());
+  }
+
+  shakeCameraLight() {
+    const cam = this.cameras?.main;
+    if (cam && typeof cam.shake === 'function') {
+      cam.shake(160, 0.004);
+    }
   }
 
   playBloodPuddle() {
