@@ -15,6 +15,8 @@ const CHARGE_DURATION_MS = 3000;
 const CHARGE_FPS = 12;
 const SHURIKEN_SPIN_FPS = 16;
 const MONKEY_HEALTH = 5;
+const SHURIKEN_STICK_MS = 2500;
+const SHURIKEN_SPIN_ACCEL_SCALE = 3;
 
 export default class Game extends Phaser.Scene {
   constructor() {
@@ -49,6 +51,7 @@ export default class Game extends Phaser.Scene {
     this.projectileLaunched = false;
     this.monkeyDefeated = false;
     this.pendingDamageEvents = [];
+    this.shurikenImpactHandled = false;
 
     this.createMonkey();
     this.createAnimations();
@@ -154,6 +157,9 @@ export default class Game extends Phaser.Scene {
     this.chargeStarted = true;
     this.naruto.play(CHARGE_ANIM);
     this.startChargeShurikenSpin();
+    if (this.cameras?.main) {
+      this.cameras.main.shake(CHARGE_DURATION_MS, 0.0035, true);
+    }
 
     this.time.delayedCall(CHARGE_DURATION_MS, () => this.startShoot());
   }
@@ -193,6 +199,9 @@ export default class Game extends Phaser.Scene {
     });
 
     this.naruto.play(SHOOT_ANIM);
+    if (this.cameras?.main) {
+      this.cameras.main.flash(180, 255, 255, 255);
+    }
   }
 
   fireShurikenProjectile() {
@@ -218,47 +227,87 @@ export default class Game extends Phaser.Scene {
   }
 
   onShurikenHit() {
-    if (this.monkeyDefeated) {
+    if (this.monkeyDefeated || this.shurikenImpactHandled) {
       return;
     }
+    this.shurikenImpactHandled = true;
 
     if (this.shurikenProjectile) {
-      this.shurikenProjectile.destroy();
-      this.shurikenProjectile = null;
+      this.shurikenProjectile.body?.stop();
+      this.shurikenProjectile.body && (this.shurikenProjectile.body.enable = false);
+      const alignedY = this.monkey.y - (this.monkey.displayHeight * 0.5);
+      this.shurikenProjectile.setPosition(
+        this.monkey.x - (this.monkey.displayWidth * 0.2),
+        alignedY
+      );
+      this.shurikenProjectile.setDepth(this.monkey.depth + 3);
+      this.shurikenProjectile.setActive(true);
+      if (!this.shurikenProjectile.anims.isPlaying) {
+        this.shurikenProjectile.play(SHURIKEN_SPIN_ANIM);
+      }
+      this.tweens.add({
+        targets: this.shurikenProjectile.anims,
+        timeScale: SHURIKEN_SPIN_ACCEL_SCALE,
+        duration: SHURIKEN_STICK_MS,
+        ease: 'Quad.easeIn'
+      });
     }
 
     this.runMonkeyDamageSequence();
+    this.startMonkeyHitSpin();
   }
 
   runMonkeyDamageSequence() {
+    // Keep backward compatibility for callers; damage now handled in startMonkeyHitSpin
+  }
+
+  startMonkeyHitSpin() {
     if (!this.monkey || !this.monkey.active) {
       return;
     }
 
-    if (this.monkeyDefeated) {
-      return;
-    }
+    const originalOriginX = this.monkey.originX;
+    const originalOriginY = this.monkey.originY;
+    const originalY = this.monkey.y;
+    const centerAlignedY = originalY - (this.monkey.displayHeight * (originalOriginY - 0.5));
+    this.monkey.setOrigin(0.5, 0.5);
+    this.monkey.setY(centerAlignedY);
 
-    const hits = MONKEY_HEALTH;
-    const hitSpacing = 140;
+    const spinTween = this.tweens.add({
+      targets: this.monkey,
+      scaleY: -1,
+      duration: 280,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut'
+    });
 
-    for (let index = 0; index < hits; index += 1) {
-      const delay = index * hitSpacing;
-      const damageEvent = this.time.delayedCall(delay, () => {
-        if (!this.monkey || !this.monkey.active || this.monkeyDefeated) {
-          return;
-        }
+    // Ramp speed over stick duration
+    this.tweens.add({
+      targets: spinTween,
+      timeScale: 4,
+      duration: SHURIKEN_STICK_MS,
+      ease: 'Quad.easeIn'
+    });
 
-        const isDead = this.monkey.damage({ damagePoints: 1 });
+    this.time.delayedCall(SHURIKEN_STICK_MS, () => {
+      spinTween.stop();
+      this.monkey.setScale(this.monkey.scaleX, 1);
+       // restore origin/y before cleanup
+      this.monkey.setOrigin(originalOriginX, originalOriginY);
+      this.monkey.setY(originalY);
 
-        if (isDead && !this.monkeyDefeated) {
-          this.monkeyDefeated = true;
-          document.dispatchEvent(new CustomEvent('enemy-defeated'));
-        }
-      });
+      if (this.shurikenProjectile) {
+        this.shurikenProjectile.destroy();
+        this.shurikenProjectile = null;
+      }
 
-      this.pendingDamageEvents.push(damageEvent);
-    }
+      if (this.monkey && this.monkey.active && !this.monkeyDefeated) {
+        this.monkeyDefeated = true;
+        this.monkey.destroy();
+        document.dispatchEvent(new CustomEvent('enemy-defeated'));
+      }
+    });
   }
 
   cleanupDamageEvents() {
