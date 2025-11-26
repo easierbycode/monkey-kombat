@@ -52,6 +52,7 @@ export default class Game extends Phaser.Scene {
     this.monkeyDefeated = false;
     this.pendingDamageEvents = [];
     this.shurikenImpactHandled = false;
+    this.pokeballPartsEmitted = false;
 
     this.createMonkey();
     this.createAnimations();
@@ -304,6 +305,9 @@ export default class Game extends Phaser.Scene {
 
       if (this.monkey && this.monkey.active && !this.monkeyDefeated) {
         this.monkeyDefeated = true;
+        this.emitPokeballParts(originalY);
+        this.monkey.safeExplode(this.monkey.muscles, 32);
+        this.monkey.safeExplode(this.monkey.bones, 16);
         this.monkey.destroy();
         document.dispatchEvent(new CustomEvent('enemy-defeated'));
       }
@@ -339,5 +343,49 @@ export default class Game extends Phaser.Scene {
 
   shutdown() {
     this.cleanupDamageEvents();
+  }
+
+  emitPokeballParts(groundY) {
+    if (this.pokeballPartsEmitted) {
+      return;
+    }
+    const source = this.monkey;
+    if (!source || !source.active) {
+      return;
+    }
+
+    this.pokeballPartsEmitted = true;
+    const emitX = source.x;
+    const emitY = groundY ?? source.y;
+
+    const bones = this.add.particles(0, 0, 'bone', {
+      frame: [0, 1, 2, 3, 4, 5, 6, 7],
+      speed: 900,
+      lifespan: 900,
+      gravityY: 1400,
+      quantity: 16,
+      scale: 2,
+      rotate: { min: -180, max: 180 },
+      emitting: false
+    });
+    bones.explode(16, emitX, emitY);
+
+    const muscles = this.add.particles(0, 0, 'muscle', {
+      frame: [0, 1, 2, 3, 4, 5, 6, 7],
+      speed: 1400,
+      lifespan: 1000,
+      gravityY: 1600,
+      quantity: 24,
+      scale: 2.5,
+      rotate: { min: -180, max: 180 },
+      emitting: false
+    });
+    muscles.explode(24, emitX, emitY);
+
+    const cleanup = () => {
+      bones.destroy();
+      muscles.destroy();
+    };
+    this.time.delayedCall(1200, cleanup);
   }
 }
