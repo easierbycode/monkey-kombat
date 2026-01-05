@@ -13,6 +13,11 @@ export default class Nemesis extends Phaser.Scene {
     });
     this.load.atlas('explosion', './assets/explosion.png', './assets/explosion.json');
     this.load.image('monkey', './assets/monkey.png');
+    this.load.spritesheet('blood', './assets/blood.png', {
+      frameWidth: 88,
+      frameHeight: 71,
+      endFrame: 9
+    });
   }
 
   create() {
@@ -42,12 +47,12 @@ export default class Nemesis extends Phaser.Scene {
 
     this.anims.create({
         key: 'explode',
-        frames: this.anims.generateFrameNames('explosion', {
-            prefix: 'explosion-',
-            start: 0,
-            end: 11,
-            suffix: '.png'
-        }),
+        frames: [
+            { key: 'explosion', frame: 'muzzleflash1' },
+            { key: 'explosion', frame: 'muzzleflash2' },
+            { key: 'explosion', frame: 'muzzleflash3' },
+            { key: 'explosion', frame: 'muzzleflash7' }
+        ],
         frameRate: 24,
         repeat: 0
     });
