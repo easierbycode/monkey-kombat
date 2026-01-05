@@ -12,7 +12,7 @@ import Santa from './scenes/game10-santa.js';
 import Game11 from './scenes/game11-sonic.js';
 import Game12 from './scenes/game12-cat.js';
 import Game13 from './scenes/game13-pokemon.js';
-import Game14 from './scenes/game13-nemesis.js';
+import Game14 from './scenes/game14-nemesis.js';
 import Game15 from './scenes/game15-naruto.js';
 import Game16 from './scenes/game16-sabin.js';
 import Game17 from './scenes/game17-suzie.js';

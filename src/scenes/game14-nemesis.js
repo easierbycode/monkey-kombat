@@ -2,14 +2,14 @@ import Monkey from '../sprites/monkey.js';
 
 export default class Nemesis extends Phaser.Scene {
   constructor() {
-    super({ key: 'Game13' });
+    super({ key: 'Game14' });
   }
 
   preload() {
     this.load.spritesheet('nemesis', './assets/nemesis-rocket.png', {
-      frameWidth: 130,
+      frameWidth: 129,
       frameHeight: 98,
-      endFrame: 6
+      frameCount: 7
     });
     this.load.atlas('explosion', './assets/explosion.png', './assets/explosion.json');
     this.load.image('monkey', './assets/monkey.png');
