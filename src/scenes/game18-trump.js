@@ -63,6 +63,7 @@ export default class Game extends Phaser.Scene {
 
     this.barrel = this.physics.add.sprite(this.currentWidth * 0.75, this.currentHeight * 0.75, 'oil-barrel');
     this.barrelFlame = this.add.sprite(this.barrel.getTopRight().x - 3, this.barrel.getTopRight().y + 8, 'oil-barrel-flame').setOrigin(1, 1);
+    this.barrelFlame.enableFilters();
     this.barrelFlame.anims.create({
       key: 'default',
       frames: this.anims.generateFrameNumbers('oil-barrel-flame', { start: 0, end: 2 }),
@@ -71,12 +72,15 @@ export default class Game extends Phaser.Scene {
     });
     this.barrelFlame.play('default');
 
-    if (this.barrelFlame.fx) {
-      const bloomPipeline = this.barrelFlame.fx.addBloom(0xffffff, 1, 1, 2, 0.65);
+    if (this.barrelFlame.filters) {
+      
+      // addGlow(tint, outerStrength, innerStrength, scale, knockout)
+      const glow = this.barrelFlame.filters.external.addGlow(0xFBF236, 0.0, 1, 1, 0.0)
+
       this.tweens.add({
-        targets: bloomPipeline,
-        strength: { from: 0.65, to: 1.05 },
-        duration: 150,
+        targets: glow,
+        outerStrength: { from: 0.29, to: 0.66 },
+        duration: 100,
         ease: 'Sine.easeInOut',
         yoyo: true,
         repeat: -1
