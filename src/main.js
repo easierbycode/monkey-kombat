@@ -16,6 +16,7 @@ import Game14 from './scenes/game13-nemesis.js';
 import Game15 from './scenes/game15-naruto.js';
 import Game16 from './scenes/game16-sabin.js';
 import Game17 from './scenes/game17-suzie.js';
+import Game18 from './scenes/game18-trump.js';
 
 window.Phaser = Phaser;
 
@@ -37,6 +38,7 @@ const scenes = [
   Game15,
   Game16,
   Game17,
+  Game18,
 ];
 
 let gameInstance = null;
