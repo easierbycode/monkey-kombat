@@ -71,7 +71,7 @@ export default class Game extends Phaser.Scene {
     });
     this.barrelFlame.play('default');
 
-    const bloomPipeline = this.barrelFlame.postFX.addBloom(0xffffff, 1, 1, 2, 0.65);
+    const bloomPipeline = this.barrelFlame.preFX.addBloom(0xffffff, 1, 1, 2, 0.65);
     this.tweens.add({
       targets: bloomPipeline,
       strength: { from: 0.65, to: 1.05 },
