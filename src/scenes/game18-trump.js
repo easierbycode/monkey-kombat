@@ -46,15 +46,15 @@ export default class Game extends Phaser.Scene {
     this.countryBoxRoulette = new CountryBoxRoulette({
       scene: this,
       x: this.currentWidth / 2,
-      y: this.currentHeight / 2
+      y: this.currentHeight * 0.75
     });
 
     this.physics.world.setBounds(0, 0, this.currentWidth, this.currentHeight, true, true, false, false);
     const colors = [0xffbb33, 0xd4af37, 0xfcdb06, 0xeeaa00, 0xeecc66, 0xff0000];
 
     let emitterConfig = {
-      speed: 100,
-      scale: { start: 1.5, end: 0 },
+      speed: 50,
+      scale: { start: 0.75, end: 0 },
       blendMode: 'ADD',
       tint: {
         onUpdate: (particle, key, value) => {
@@ -66,7 +66,7 @@ export default class Game extends Phaser.Scene {
     // Create emitter using the new syntax: scene.add.particles(x, y, texture, config)
     this.emitter = this.add.particles(0, 0, 'particle', emitterConfig);
 
-    this.clownCar = this.physics.add.sprite(this.currentWidth / 2, this.currentHeight * 0.38, 'clownCar').setFlipX(true).setScale(2).setOrigin(0.5, 0.95);
+    this.clownCar = this.physics.add.sprite(this.currentWidth / 2, this.currentHeight * 0.5, 'clownCar').setFlipX(true).setOrigin(0.5, 0.95);
     this.clownCar.anims.create({
       key: 'default',
       frames: this.anims.generateFrameNumbers('clownCar', { start: 1, end: 2 }),
