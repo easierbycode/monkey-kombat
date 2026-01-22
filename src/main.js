@@ -140,7 +140,7 @@ export function startGame({ sceneIndex, debug, parent } = {}) {
   const { width, height } = computeDimensions();
 
   const config = {
-    type: Phaser.AUTO,
+    type: Phaser.WEBGL,
     width,
     height,
     physics: {
@@ -159,7 +159,7 @@ export function startGame({ sceneIndex, debug, parent } = {}) {
   }
 
   gameInstance = new Phaser.Game(config);
-  window.game = gameInstance;
+  window.game = globalThis.__PHASER_GAME__ = gameInstance;
 
   const handleResize = () => applyResize(gameInstance);
   resizeHandler = handleResize;
