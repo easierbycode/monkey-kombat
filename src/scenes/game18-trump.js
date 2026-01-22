@@ -16,6 +16,11 @@ export default class Game extends Phaser.Scene {
       frameHeight: COUNTRY_BOX_ROULETTE_FRAME_SIZE,
       endFrame: 2
     });
+    this.load.spritesheet('exxon', './assets/exxon.png', {
+      frameWidth: 188,
+      frameHeight: 210,
+      endFrame: 2
+    });
   }
 
   lightning() {
