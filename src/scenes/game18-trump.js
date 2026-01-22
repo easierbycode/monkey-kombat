@@ -9,6 +9,8 @@ export default class Game extends Phaser.Scene {
   }
 
   preload() {
+    // 62x79
+    this.load.image('oil-barrel', './assets/oil-barrel.png');
     this.load.image('particle', './assets/particle.png');
     this.load.spritesheet('clownCar', './assets/clownCar.png', { frameWidth: 64, frameHeight: 92 });
     this.load.spritesheet(COUNTRY_BOX_ROULETTE_KEY, './assets/country-roulette-box.png', {
@@ -19,6 +21,11 @@ export default class Game extends Phaser.Scene {
     this.load.spritesheet('exxon', './assets/exxon.png', {
       frameWidth: 188,
       frameHeight: 210,
+      endFrame: 2
+    });
+    this.load.spritesheet('oil-barrel-flame', './assets/oil-barrel-flame.png', {
+      frameWidth: 30,
+      frameHeight: 59,
       endFrame: 2
     });
   }
@@ -53,6 +60,16 @@ export default class Game extends Phaser.Scene {
       x: this.currentWidth / 2,
       y: this.currentHeight * 0.75
     });
+
+    this.barrel = this.physics.add.sprite(this.currentWidth * 0.75, this.currentHeight * 0.75, 'oil-barrel');
+    this.barrelFlame = this.add.sprite(this.barrel.getTopRight().x - 3, this.barrel.getTopRight().y + 8, 'oil-barrel-flame').setOrigin(1, 1);
+    this.barrelFlame.anims.create({
+      key: 'default',
+      frames: this.anims.generateFrameNumbers('oil-barrel-flame', { start: 0, end: 2 }),
+      frameRate: 19,
+      repeat: -1
+    });
+    this.barrelFlame.play('default');
 
     this.physics.world.setBounds(0, 0, this.currentWidth, this.currentHeight, true, true, false, false);
     const colors = [0xffbb33, 0xd4af37, 0xfcdb06, 0xeeaa00, 0xeecc66, 0xff0000];
