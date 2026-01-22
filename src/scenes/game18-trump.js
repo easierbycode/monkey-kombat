@@ -71,15 +71,17 @@ export default class Game extends Phaser.Scene {
     });
     this.barrelFlame.play('default');
 
-    const bloomPipeline = this.barrelFlame.preFX.addBloom(0xffffff, 1, 1, 2, 0.65);
-    this.tweens.add({
-      targets: bloomPipeline,
-      strength: { from: 0.65, to: 1.05 },
-      duration: 150,
-      ease: 'Sine.easeInOut',
-      yoyo: true,
-      repeat: -1
-    });
+    if (this.barrelFlame.fx) {
+      const bloomPipeline = this.barrelFlame.fx.addBloom(0xffffff, 1, 1, 2, 0.65);
+      this.tweens.add({
+        targets: bloomPipeline,
+        strength: { from: 0.65, to: 1.05 },
+        duration: 150,
+        ease: 'Sine.easeInOut',
+        yoyo: true,
+        repeat: -1
+      });
+    }
 
     this.physics.world.setBounds(0, 0, this.currentWidth, this.currentHeight, true, true, false, false);
     const colors = [0xffbb33, 0xd4af37, 0xfcdb06, 0xeeaa00, 0xeecc66, 0xff0000];
