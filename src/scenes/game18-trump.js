@@ -179,6 +179,7 @@ export default class Game extends Phaser.Scene {
                 if (this.emitter) this.emitter.destroy();
                 if (this.clownCar) this.clownCar.destroy();
                 this.emitter = null; // Clear reference
+                document.dispatchEvent(new CustomEvent('enemy-defeated'));
               }
             });
           }
