@@ -282,6 +282,81 @@
       display: none;
     }
 
+    /* MK2-style random select */
+    @keyframes mk2-flash-border {
+      0%   { box-shadow: 0 0 0 4px #ff0, 0 0 15px 4px #ff0; }
+      25%  { box-shadow: 0 0 0 4px #f00, 0 0 15px 4px #f00; }
+      50%  { box-shadow: 0 0 0 4px #0ff, 0 0 15px 4px #0ff; }
+      75%  { box-shadow: 0 0 0 4px #0f0, 0 0 15px 4px #0f0; }
+      100% { box-shadow: 0 0 0 4px #ff0, 0 0 15px 4px #ff0; }
+    }
+
+    .mk2-highlight {
+      animation: mk2-flash-border 0.15s linear infinite;
+      border-radius: 5px;
+      z-index: 100;
+      position: relative;
+    }
+
+    .mk2-selected {
+      animation: mk2-selected-pulse 0.4s ease-in-out 3;
+      border-radius: 5px;
+      z-index: 100;
+      position: relative;
+    }
+
+    @keyframes mk2-selected-pulse {
+      0%   { box-shadow: 0 0 0 4px #fff, 0 0 20px 8px #ff0; }
+      50%  { box-shadow: 0 0 0 6px #ff0, 0 0 30px 12px #f80; }
+      100% { box-shadow: 0 0 0 4px #fff, 0 0 20px 8px #ff0; }
+    }
+
+    .mk2-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 99;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .mk2-overlay.active {
+      opacity: 1;
+    }
+
+    .random-select-btn {
+      background: linear-gradient(135deg, #cc0000, #ff6600);
+      border: 2px solid #ffd700;
+      color: #ffd700;
+      font-family: 'Orbitron', monospace;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 10px 24px;
+      cursor: pointer;
+      text-transform: uppercase;
+      font-size: 0.9em;
+      margin: 0 0 15px 0;
+      transition: all 0.2s ease;
+      box-shadow: 0 0 15px rgba(255, 100, 0, 0.4);
+    }
+
+    .random-select-btn:hover {
+      background: linear-gradient(135deg, #ff6600, #ffcc00);
+      color: #000;
+      box-shadow: 0 0 25px rgba(255, 200, 0, 0.6);
+      transform: scale(1.05);
+    }
+
+    .random-select-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
     .game-wrapper {
       position: fixed;
       inset: 0;
@@ -358,6 +433,7 @@
   <div class="select-container" id="selectContainer">
     <h1>MONKEY KOMBAT</h1>
     <div class="choose">CHOOSE YOUR FIGHTER</div>
+    <button class="random-select-btn" id="randomSelectBtn" type="button">&#9889; RANDOM FIGHTER</button>
 
     <div class="character-grid" id="characterGrid">
       <a href="#scene-0" class="character-tile" data-index="0" data-scene="0">
@@ -640,6 +716,62 @@
       }
     }
 
+    // MK2-style random select: rapidly cycles through all character tiles with
+    // a flashing colored border, decelerates, then locks on the chosen fighter.
+    function mk2RandomSelect(tiles, callback) {
+      const overlay = document.createElement('div');
+      overlay.className = 'mk2-overlay';
+      document.body.appendChild(overlay);
+      setTimeout(() => overlay.classList.add('active'), 10);
+
+      const totalCycles = 24 + Math.floor(Math.random() * 8); // 24-31 steps
+      const chosenIndex = Math.floor(Math.random() * tiles.length);
+
+      let currentStep = 0;
+      let currentIndex = Math.floor(Math.random() * tiles.length);
+      let prevIndex = -1;
+
+      function step() {
+        if (prevIndex >= 0) {
+          tiles[prevIndex].classList.remove('mk2-highlight');
+        }
+
+        currentIndex = (currentIndex + 1) % tiles.length;
+        // On the last step, force land on chosen fighter
+        if (currentStep === totalCycles - 1) {
+          currentIndex = chosenIndex;
+        }
+
+        tiles[currentIndex].classList.add('mk2-highlight');
+        tiles[currentIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+        prevIndex = currentIndex;
+        currentStep++;
+
+        if (currentStep < totalCycles) {
+          // MK2 deceleration curve: starts ~60ms, slows to ~350ms
+          const progress = currentStep / totalCycles;
+          const delay = 60 + Math.pow(progress, 2.5) * 300;
+          setTimeout(step, delay);
+        } else {
+          // Selection locked — pulse the winner MK2 style
+          tiles[currentIndex].classList.remove('mk2-highlight');
+          tiles[currentIndex].classList.add('mk2-selected');
+
+          setTimeout(() => {
+            tiles[currentIndex].classList.remove('mk2-selected');
+            overlay.classList.remove('active');
+            setTimeout(() => {
+              overlay.remove();
+              callback(chosenIndex);
+            }, 300);
+          }, 1400);
+        }
+      }
+
+      step();
+    }
+
     const backButton = document.getElementById('backButton');
     const gameUi = document.querySelector('.game-ui');
     const statusLabel = document.getElementById('gameStatus');
@@ -660,6 +792,19 @@
 
     backButton.addEventListener('click', () => {
       exitToSelect();
+    });
+
+    const randomSelectBtn = document.getElementById('randomSelectBtn');
+    randomSelectBtn.addEventListener('click', () => {
+      if (document.body.classList.contains('game-active')) {
+        return;
+      }
+      randomSelectBtn.disabled = true;
+      const tiles = Array.from(document.querySelectorAll('.character-tile'));
+      mk2RandomSelect(tiles, (chosenIndex) => {
+        randomSelectBtn.disabled = false;
+        launchScene(chosenIndex);
+      });
     });
 
     document.addEventListener('keydown', (event) => {
