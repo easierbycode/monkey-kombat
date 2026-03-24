@@ -1,4 +1,5 @@
 import CountryBoxRoulette from '../sprites/country-box-roulette.js';
+import Monkey from '../sprites/monkey.js';
 
 const COUNTRY_BOX_ROULETTE_KEY = 'country-box-roulette';
 const COUNTRY_BOX_ROULETTE_FRAME_SIZE = 32;
@@ -12,6 +13,21 @@ export default class Game extends Phaser.Scene {
     // 62x79
     this.load.image('oil-barrel', './assets/oil-barrel.png');
     this.load.image('particle', './assets/particle.png');
+    this.load.image('monkey', './assets/monkey.png');
+    this.load.atlas('explosion', './assets/explosion.png', './assets/explosion.json');
+    this.load.spritesheet('blood', './assets/blood.png', {
+      frameWidth: 88,
+      frameHeight: 71,
+      endFrame: 9
+    });
+    this.load.spritesheet('bone', './assets/bone.png', {
+      frameWidth: 18,
+      frameHeight: 18
+    });
+    this.load.spritesheet('muscle', './assets/muscle.png', {
+      frameWidth: 23,
+      frameHeight: 22
+    });
     this.load.spritesheet('clownCar', './assets/clownCar.png', { frameWidth: 64, frameHeight: 92 });
     this.load.spritesheet(COUNTRY_BOX_ROULETTE_KEY, './assets/country-roulette-box.png', {
       frameWidth: COUNTRY_BOX_ROULETTE_FRAME_SIZE,
@@ -51,6 +67,14 @@ export default class Game extends Phaser.Scene {
     this.time.delayedCall(64 + (80 * 3), () => this.cameras.main?.setBackgroundColor(0x000000));
   }
 
+  update() {
+    // Keep flame attached to barrel as it falls
+    if (this.barrel && this.barrel.active && this.barrelFlame && this.barrelFlame.active) {
+      this.barrelFlame.x = this.barrel.getTopRight().x - 3;
+      this.barrelFlame.y = this.barrel.getTopRight().y + 8;
+    }
+  }
+
   create() {
     this.currentWidth = this.game.config.width;
     this.currentHeight = this.game.config.height;
@@ -61,7 +85,15 @@ export default class Game extends Phaser.Scene {
       y: this.currentHeight * 0.75
     });
 
+    // Create monkey under the barrel
+    this.monkey = new Monkey({
+      scene: this,
+      x: this.currentWidth * 0.75,
+      y: this.currentHeight
+    });
+
     this.barrel = this.physics.add.sprite(this.currentWidth * 0.75, this.currentHeight * 0.75, 'oil-barrel');
+    this.barrel.body.setAllowGravity(false);
     this.barrelFlame = this.add.sprite(this.barrel.getTopRight().x - 3, this.barrel.getTopRight().y + 8, 'oil-barrel-flame').setOrigin(1, 1);
     this.barrelFlame.enableFilters();
     this.barrelFlame.anims.create({
@@ -153,12 +185,26 @@ export default class Game extends Phaser.Scene {
       loop: true // Use loop: true instead of repeat: -1
     });
 
+    // Add collider between barrel and monkey
+    this.physics.add.collider(this.barrel, this.monkey, () => {
+      if (this.monkey && this.monkey.active) {
+        this.monkey.damage({ damagePoints: 1 });
+      }
+    });
+
     // Disable world bounds and make logo appear to move away from the camera after 21 seconds
     this.time.addEvent({
       delay: 21000,
       callback: () => {
         if (!this.physics.world) return; // Guard
         this.physics.world.setBoundsCollision(false, false, false, false);
+
+        // Drop the barrel
+        if (this.barrel && this.barrel.active) {
+          this.barrel.body.setAllowGravity(true);
+          this.barrel.setVelocityY(200);
+        }
+
         if (!this.clownCar || !this.clownCar.active) return; // Guard logo
         this.tweens.add({
           targets: this.clownCar,
