@@ -1,4 +1,5 @@
 import CountryBoxRoulette from '../sprites/country-box-roulette.js';
+import Monkey from '../sprites/monkey.js';
 
 const COUNTRY_BOX_ROULETTE_KEY = 'country-box-roulette';
 const COUNTRY_BOX_ROULETTE_FRAME_SIZE = 32;
@@ -12,6 +13,21 @@ export default class Game extends Phaser.Scene {
     // 62x79
     this.load.image('oil-barrel', './assets/oil-barrel.png');
     this.load.image('particle', './assets/particle.png');
+    this.load.image('monkey', './assets/monkey.png');
+    this.load.atlas('explosion', './assets/explosion.png', './assets/explosion.json');
+    this.load.spritesheet('blood', './assets/blood.png', {
+      frameWidth: 88,
+      frameHeight: 71,
+      endFrame: 9
+    });
+    this.load.spritesheet('bone', './assets/bone.png', {
+      frameWidth: 18,
+      frameHeight: 18
+    });
+    this.load.spritesheet('muscle', './assets/muscle.png', {
+      frameWidth: 23,
+      frameHeight: 22
+    });
     this.load.spritesheet('clownCar', './assets/clownCar.png', { frameWidth: 64, frameHeight: 92 });
     this.load.spritesheet(COUNTRY_BOX_ROULETTE_KEY, './assets/country-roulette-box.png', {
       frameWidth: COUNTRY_BOX_ROULETTE_FRAME_SIZE,
@@ -51,6 +67,14 @@ export default class Game extends Phaser.Scene {
     this.time.delayedCall(64 + (80 * 3), () => this.cameras.main?.setBackgroundColor(0x000000));
   }
 
+  update() {
+    // Keep flame attached to barrel as it falls
+    if (this.barrel && this.barrel.active && this.barrelFlame && this.barrelFlame.active) {
+      this.barrelFlame.x = this.barrel.getTopRight().x - 3;
+      this.barrelFlame.y = this.barrel.getTopRight().y + 8;
+    }
+  }
+
   create() {
     this.currentWidth = this.game.config.width;
     this.currentHeight = this.game.config.height;
@@ -61,7 +85,23 @@ export default class Game extends Phaser.Scene {
       y: this.currentHeight * 0.75
     });
 
-    this.barrel = this.physics.add.sprite(this.currentWidth * 0.75, this.currentHeight * 0.75, 'oil-barrel');
+    // Position barrel and monkey at right side of screen
+    const barrelX = this.currentWidth * 0.75;
+
+    // Create monkey under the barrel (scale down to fit under barrel)
+    this.monkey = new Monkey({
+      scene: this,
+      x: barrelX,
+      y: this.currentHeight
+    });
+    this.monkey.setScale(2);
+
+    // Barrel sits on top of the monkey (barrel bottom meets monkey top)
+    const monkeyTop = this.currentHeight - this.monkey.displayHeight;
+    const barrelY = monkeyTop - 39; // half barrel height (79/2)
+
+    this.barrel = this.physics.add.sprite(barrelX, barrelY, 'oil-barrel');
+    this.barrel.body.setAllowGravity(false);
     this.barrelFlame = this.add.sprite(this.barrel.getTopRight().x - 3, this.barrel.getTopRight().y + 8, 'oil-barrel-flame').setOrigin(1, 1);
     this.barrelFlame.enableFilters();
     this.barrelFlame.anims.create({
@@ -73,7 +113,6 @@ export default class Game extends Phaser.Scene {
     this.barrelFlame.play('default');
 
     if (this.barrelFlame.filters) {
-      
       // addGlow(tint, outerStrength, innerStrength, scale, knockout)
       const glow = this.barrelFlame.filters.external.addGlow(0xFBF236, 0.0, 1, 1, 0.0)
 
@@ -159,6 +198,7 @@ export default class Game extends Phaser.Scene {
       callback: () => {
         if (!this.physics.world) return; // Guard
         this.physics.world.setBoundsCollision(false, false, false, false);
+
         if (!this.clownCar || !this.clownCar.active) return; // Guard logo
         this.tweens.add({
           targets: this.clownCar,
@@ -179,6 +219,20 @@ export default class Game extends Phaser.Scene {
                 if (this.emitter) this.emitter.destroy();
                 if (this.clownCar) this.clownCar.destroy();
                 this.emitter = null; // Clear reference
+
+                // Drop the barrel when clown car exits
+                if (this.barrel && this.barrel.active) {
+                  this.barrel.body.setAllowGravity(true);
+                  this.barrel.setVelocityY(200);
+
+                  // Add overlap check to destroy monkey on impact
+                  this.physics.add.overlap(this.barrel, this.monkey, () => {
+                    if (this.monkey && this.monkey.active) {
+                      this.monkey.damage({ damagePoints: 1 });
+                    }
+                  });
+                }
+
                 document.dispatchEvent(new CustomEvent('enemy-defeated'));
               }
             });
