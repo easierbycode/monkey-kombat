@@ -164,6 +164,9 @@ export default class Game extends Phaser.Scene {
   }
 
   hitEnemy(bullet, enemy) {
-    enemy.damage(bullet, enemy);
+    const isDead = enemy.damage(bullet);
+    if (isDead) {
+      document.dispatchEvent(new CustomEvent('enemy-defeated'));
+    }
   }
 }
