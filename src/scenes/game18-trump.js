@@ -68,10 +68,15 @@ export default class Game extends Phaser.Scene {
   }
 
   update() {
-    // Keep flame attached to barrel as it falls
+    // Keep flame attached to barrel
     if (this.barrel && this.barrel.active && this.barrelFlame && this.barrelFlame.active) {
       this.barrelFlame.x = this.barrel.getTopRight().x - 3;
       this.barrelFlame.y = this.barrel.getTopRight().y + 8;
+    }
+    // Keep monkey on top of barrel
+    if (this.barrel && this.barrel.active && this.monkey && this.monkey.active) {
+      this.monkey.x = this.barrel.x;
+      this.monkey.y = this.barrel.y - 39; // barrel top
     }
   }
 
@@ -88,20 +93,20 @@ export default class Game extends Phaser.Scene {
     // Position barrel and monkey at right side of screen
     const barrelX = this.currentWidth * 0.75;
 
-    // Create monkey under the barrel (scale down to fit under barrel)
+    // Barrel near bottom of screen
+    const barrelY = this.currentHeight - 39; // half barrel height (79/2) from bottom
+    this.barrel = this.physics.add.sprite(barrelX, barrelY, 'oil-barrel');
+    this.barrel.body.setAllowGravity(false);
+
+    // Monkey sits on top of the barrel
+    const barrelTop = barrelY - 39; // top of barrel
     this.monkey = new Monkey({
       scene: this,
       x: barrelX,
-      y: this.currentHeight
+      y: barrelTop
     });
     this.monkey.setScale(2);
 
-    // Barrel sits on top of the monkey (barrel bottom meets monkey top)
-    const monkeyTop = this.currentHeight - this.monkey.displayHeight;
-    const barrelY = monkeyTop - 39; // half barrel height (79/2)
-
-    this.barrel = this.physics.add.sprite(barrelX, barrelY, 'oil-barrel');
-    this.barrel.body.setAllowGravity(false);
     this.barrelFlame = this.add.sprite(this.barrel.getTopRight().x - 3, this.barrel.getTopRight().y + 8, 'oil-barrel-flame').setOrigin(1, 1);
     this.barrelFlame.enableFilters();
     this.barrelFlame.anims.create({
@@ -220,14 +225,17 @@ export default class Game extends Phaser.Scene {
                 if (this.clownCar) this.clownCar.destroy();
                 this.emitter = null; // Clear reference
 
-                // Drop the barrel when clown car exits
+                // Drop the barrel (with monkey riding on top)
                 if (this.barrel && this.barrel.active) {
+                  // Re-enable bottom world bound so barrel can hit the ground
+                  this.physics.world.setBoundsCollision(false, false, false, true);
                   this.barrel.body.setAllowGravity(true);
                   this.barrel.setVelocityY(200);
+                  this.barrel.body.setCollideWorldBounds(true, 0, 0, true);
 
-                  // Add overlap check to destroy monkey on impact
-                  this.physics.add.overlap(this.barrel, this.monkey, () => {
-                    if (this.monkey && this.monkey.active) {
+                  // Destroy monkey when barrel hits the ground
+                  this.physics.world.on('worldbounds', (body) => {
+                    if (body === this.barrel.body && this.monkey && this.monkey.active) {
                       this.monkey.damage({ damagePoints: 1 });
                     }
                   });
