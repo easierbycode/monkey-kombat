@@ -28,6 +28,66 @@ export default class Game extends Phaser.Scene {
       frameHeight: 59,
       endFrame: 2
     });
+    this.load.spritesheet('coin', './assets/coin.png', { frameWidth: 54, frameHeight: 54 });
+    this.load.spritesheet('coin-impact', './assets/coin-impact.png', { frameWidth: 20, frameHeight: 16 });
+    this.load.audio('coin-sound', './assets/coin.mp3');
+  }
+
+  popCoin() {
+    const coin = this.coins.create(
+      this.countryBoxRoulette.x,
+      this.countryBoxRoulette.y,
+      'coin'
+    );
+    coin.setScale(0.5);
+    coin.play('coin-spin');
+    coin.setCollideWorldBounds(true);
+    coin.setBounce(0.6);
+
+    const angle = Phaser.Math.FloatBetween(0, Math.PI * 2);
+    const speed = Phaser.Math.Between(80, 200);
+    coin.setVelocity(Math.cos(angle) * speed, Math.sin(angle) * speed);
+
+    // Grace period: ignore clown car overlap right after spawn
+    coin._justSpawned = true;
+    this.time.delayedCall(300, () => { if (coin.active) coin._justSpawned = false; });
+
+    // Auto-destroy coins that fly off screen or are never collected
+    this.time.delayedCall(4000, () => { if (coin.active) coin.destroy(); });
+
+    this.sound.play('coin-sound');
+  }
+
+  onCoinHitClownCar(coin) {
+    if (!coin.active || coin._justSpawned) return;
+    const x = coin.x;
+    const y = coin.y;
+    coin.destroy();
+
+    // Coin-impact sprite
+    const impact = this.add.sprite(x, y, 'coin-impact').setScale(2);
+    impact.play('coin-impact-anim');
+    impact.once('animationcomplete', () => impact.destroy());
+
+    // Barrel FX: apply a fading glow to the clown car (same effect as barrel flame)
+    if (this.clownCar && this.clownCar.active) {
+      if (!this.clownCar.filters) {
+        this.clownCar.enableFilters();
+      }
+      const glow = this.clownCar.filters.external.addGlow(0xFBF236, 0.8, 0.5, 1, 0.0);
+      this.tweens.add({
+        targets: glow,
+        outerStrength: 0,
+        innerStrength: 0,
+        duration: 800,
+        ease: 'Power2',
+        onComplete: () => {
+          if (this.clownCar && this.clownCar.active && this.clownCar.filters) {
+            this.clownCar.filters.external.remove(glow);
+          }
+        }
+      });
+    }
   }
 
   lightning() {
@@ -58,7 +118,7 @@ export default class Game extends Phaser.Scene {
     this.countryBoxRoulette = new CountryBoxRoulette({
       scene: this,
       x: this.currentWidth / 2,
-      y: this.currentHeight * 0.75
+      y: this.currentHeight * 0.45
     });
 
     this.barrel = this.physics.add.sprite(this.currentWidth * 0.75, this.currentHeight * 0.75, 'oil-barrel');
@@ -86,6 +146,28 @@ export default class Game extends Phaser.Scene {
         repeat: -1
       });
     }
+
+    // Coin animations
+    this.anims.create({
+      key: 'coin-spin',
+      frames: this.anims.generateFrameNumbers('coin'),
+      frameRate: 20,
+      repeat: -1
+    });
+    this.anims.create({
+      key: 'coin-impact-anim',
+      frames: this.anims.generateFrameNumbers('coin-impact'),
+      duration: 500,
+      hideOnComplete: true
+    });
+
+    // Coins physics group
+    this.coins = this.physics.add.group();
+
+    // Give the country box a static physics body for overlap detection
+    this.physics.add.existing(this.countryBoxRoulette, true);
+
+    this._boxCooldown = false;
 
     this.physics.world.setBounds(0, 0, this.currentWidth, this.currentHeight, true, true, false, false);
     const colors = [0xffbb33, 0xd4af37, 0xfcdb06, 0xeeaa00, 0xeecc66, 0xff0000];
@@ -140,6 +222,19 @@ export default class Game extends Phaser.Scene {
       }
     });
 
+
+    // Clown car hits mushroom box → pop coin
+    this.physics.add.overlap(this.clownCar, this.countryBoxRoulette, () => {
+      if (this._boxCooldown) return;
+      this._boxCooldown = true;
+      this.popCoin();
+      this.time.delayedCall(2000, () => { this._boxCooldown = false; });
+    });
+
+    // Coin hits clown car → coin-impact + barrel FX
+    this.physics.add.overlap(this.coins, this.clownCar, (coin) => {
+      this.onCoinHitClownCar(coin);
+    });
 
     this.emitter.startFollow(this.clownCar);
 
