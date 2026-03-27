@@ -24,6 +24,9 @@ export default class Nemesis extends Phaser.Scene {
     const gameWidth = this.game.config.width;
     const gameHeight = this.game.config.height;
 
+    // Integer scale for Nemesis to fit viewport (130x98 per frame)
+    const nemScale = Math.max(1, Math.floor(Math.min(gameWidth / 130, gameHeight / 98)));
+
     this.monkey = new Monkey({
       scene: this,
       x: gameWidth,
@@ -59,7 +62,7 @@ export default class Nemesis extends Phaser.Scene {
 
     this.nemesis = this.add.sprite(0, gameHeight, 'nemesis');
     this.nemesis.setOrigin(0, 1);
-    this.nemesis.setScale(2);
+    this.nemesis.setScale(nemScale);
     this.nemesis.play('nemesis-idle');
 
     this.time.delayedCall(1000, () => {
@@ -85,8 +88,11 @@ export default class Nemesis extends Phaser.Scene {
   }
 
   hitMonkey(rocket, monkey) {
+    const gameWidth = this.game.config.width;
     const explosion = this.add.sprite(monkey.x, monkey.y, 'explosion');
-    explosion.setScale(3);
+    // Clamp explosion so it doesn't extend past the right edge
+    const maxExplosionScale = Math.max(1, Math.floor((gameWidth - monkey.x) * 2 / explosion.width));
+    explosion.setScale(Math.min(3, maxExplosionScale));
     explosion.play('explode');
     rocket.destroy();
     monkey.destroy();
