@@ -59,7 +59,7 @@ export default class Nemesis extends Phaser.Scene {
 
     this.nemesis = this.add.sprite(0, gameHeight, 'nemesis');
     this.nemesis.setOrigin(0, 1);
-    this.nemesis.setScale(2.5);
+    this.nemesis.setScale(2);
     this.nemesis.play('nemesis-idle');
 
     this.time.delayedCall(1000, () => {
@@ -86,7 +86,7 @@ export default class Nemesis extends Phaser.Scene {
 
   hitMonkey(rocket, monkey) {
     const explosion = this.add.sprite(monkey.x, monkey.y, 'explosion');
-    explosion.setScale(4);
+    explosion.setScale(3);
     explosion.play('explode');
     rocket.destroy();
     monkey.destroy();

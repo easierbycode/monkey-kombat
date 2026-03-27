@@ -14,17 +14,13 @@
     }
 
     body {
-      background: linear-gradient(45deg, #1a1a2e, #16213e, #0f3460);
+      background: url('menu-bg.png') center center / cover no-repeat #2a2a2a;
       color: #fff;
       font-family: 'Orbitron', monospace;
       margin: 0;
       padding: 0;
       height: 100vh;
       overflow: hidden;
-      background-image:
-        radial-gradient(circle at 25% 25%, #333 1px, transparent 1px),
-        radial-gradient(circle at 75% 75%, #333 1px, transparent 1px);
-      background-size: 50px 50px;
       transition: background 0.4s ease;
     }
 
@@ -52,7 +48,8 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      height: calc(100vh - 120px);
+      justify-content: center;
+      height: 100vh;
       position: relative;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
@@ -67,41 +64,44 @@
     .character-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 8px;
-      max-width: 800px;
+      gap: 5px;
+      max-width: 720px;
       margin: 0 auto;
-      padding: 20px;
-      background: linear-gradient(135deg, #2c2c54, #40407a);
-      border: 3px solid #ffd700;
-      border-radius: 10px;
-      box-shadow:
-        0 0 30px rgba(255, 215, 0, 0.3),
-        inset 0 0 30px rgba(255, 215, 0, 0.1);
+      padding: 5px;
+      background:
+        radial-gradient(ellipse at 25% 15%, rgba(130,140,110,0.4), transparent 50%),
+        radial-gradient(ellipse at 75% 85%, rgba(100,115,90,0.3), transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(110,125,100,0.3), transparent 60%),
+        linear-gradient(160deg, #5e6e55, #4a5a42, #3d4d36, #526249);
+      border: 4px solid #222;
+      border-radius: 0;
+      box-shadow: inset 0 0 40px rgba(0,0,0,0.3);
     }
 
     .character-tile {
       position: relative;
-      aspect-ratio: 1/1;
-      background: linear-gradient(135deg, #2c2c54, #1e1e3f);
-      border: 2px solid #666;
+      aspect-ratio: 4/3;
+      background: #1a1a1a;
+      border: 3px solid #333;
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: all 0.15s ease;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       overflow: hidden;
       text-decoration: none;
-      border-radius: 5px;
-      box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
+      border-radius: 0;
+      box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.6);
       color: inherit;
     }
 
     .character-tile:hover,
     .character-tile.selected {
-      transform: scale(1.08);
+      transform: scale(1.05);
       z-index: 10;
-      box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+      box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+      border-color: #888;
     }
 
     .character-tile.selected {
@@ -122,6 +122,29 @@
       100% {
         border-color: #00ff00;
       }
+    }
+
+    .random-tile {
+      background:
+        radial-gradient(circle, rgba(60,70,55,0.8), rgba(30,35,28,0.9)),
+        linear-gradient(135deg, #3a4a35, #2a3a25);
+      border-color: #444;
+    }
+
+    .random-tile img {
+      image-rendering: pixelated;
+      max-width: 50% !important;
+      max-height: 50% !important;
+      filter: brightness(1.5) contrast(1.3) drop-shadow(0 0 8px rgba(255,215,0,0.4)) !important;
+    }
+
+    .random-tile:hover {
+      border-color: #ffd700;
+      box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+    }
+
+    .random-tile:hover img {
+      filter: brightness(2) contrast(1.4) drop-shadow(0 0 12px rgba(255,215,0,0.7)) !important;
     }
 
     .character-tile img {
@@ -190,90 +213,37 @@
 
     .select-container::before,
     .select-container::after {
-      content: '';
-      position: absolute;
-      width: 100px;
-      height: 100px;
-      border: 3px solid #ffd700;
-      z-index: -1;
-    }
-
-    .select-container::before {
-      top: 50px;
-      left: 50px;
-      border-right: none;
-      border-bottom: none;
-      box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
-    }
-
-    .select-container::after {
-      bottom: 50px;
-      right: 50px;
-      border-left: none;
-      border-top: none;
-      box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+      display: none;
     }
 
     @media (orientation: landscape) and (max-height: 600px) {
-      h1 {
-        font-size: 1.8em;
-        margin: 10px 0;
-      }
-
-      .choose {
-        font-size: 1em;
-        margin: 5px 0 10px 0;
-      }
-
       .character-grid {
-        grid-template-columns: repeat(6, 1fr);
-        gap: 6px;
-        padding: 10px;
-        max-width: 95%;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 4px;
+        padding: 4px;
+        max-width: 98%;
       }
 
       .select-container {
-        height: calc(100vh - 80px);
+        height: 100vh;
       }
 
       .character-tile {
-        aspect-ratio: 1/1;
+        aspect-ratio: 4/3;
       }
 
       .character-name {
-        font-size: 0.65em;
-        padding: 4px 2px;
-      }
-
-      .select-container::before,
-      .select-container::after {
-        width: 60px;
-        height: 60px;
-      }
-
-      .instructions {
-        font-size: 0.8em;
-        margin-top: 10px;
+        font-size: 0.6em;
+        padding: 3px 2px;
       }
     }
 
     @media (max-width: 768px) {
       .character-grid {
         grid-template-columns: repeat(3, 1fr);
-        gap: 10px;
+        gap: 4px;
+        padding: 4px;
         max-width: 95%;
-      }
-
-      h1 {
-        font-size: 2em;
-      }
-
-      .choose {
-        font-size: 1em;
-      }
-
-      .instructions {
-        font-size: 0.8em;
       }
     }
 
@@ -439,10 +409,6 @@
 
 <body>
   <div class="select-container" id="selectContainer">
-    <h1>MONKEY KOMBAT</h1>
-    <div class="choose">CHOOSE YOUR FIGHTER</div>
-    <button class="random-select-btn" id="randomSelectBtn" type="button">&#9889; RANDOM FIGHTER</button>
-
     <div class="character-grid" id="characterGrid">
       <a href="#scene-0" class="character-tile" data-index="0" data-scene="0">
         <img src="assets/cyrax.png" alt="Cyrax">
@@ -493,6 +459,10 @@
         <img src="assets/santa.png" alt="Santa">
         <div class="character-name">SANTA</div>
       </a>
+
+      <div class="character-tile random-tile" data-random="true">
+        <img src="assets/monkey-head.png" alt="Random Select">
+      </div>
 
       <a href="#scene-10" class="character-tile" data-index="10" data-scene="10">
         <img src="assets/sonic.png" alt="Sonic">
@@ -590,14 +560,20 @@
               return;
             }
 
+            event.preventDefault();
+            this.currentIndex = index;
+            this.updateSelection();
+
+            if (tile.dataset.random === 'true') {
+              this.triggerRandomSelect();
+              return;
+            }
+
             const sceneValue = tile.dataset.scene;
             if (typeof sceneValue === 'undefined') {
               return;
             }
 
-            event.preventDefault();
-            this.currentIndex = index;
-            this.updateSelection();
             this.selectCurrent();
           });
         });
@@ -605,7 +581,7 @@
 
       getCols() {
         if (window.matchMedia('(orientation: landscape) and (max-height: 600px)').matches) {
-          return 6;
+          return 7;
         }
         if (window.matchMedia('(max-width: 768px)').matches) {
           return 3;
@@ -701,6 +677,11 @@
           return;
         }
 
+        if (currentTile.dataset.random === 'true') {
+          this.triggerRandomSelect();
+          return;
+        }
+
         const sceneValue = currentTile.dataset.scene;
         if (typeof sceneValue === 'undefined') {
           return;
@@ -714,6 +695,16 @@
         if (this.onSelect) {
           this.onSelect(sceneIndex);
         }
+      }
+
+      triggerRandomSelect() {
+        const sceneTiles = this.tiles.filter(t => typeof t.dataset.scene !== 'undefined');
+        mk2RandomSelect(sceneTiles, (chosenIndex) => {
+          const sceneIndex = Number.parseInt(sceneTiles[chosenIndex].dataset.scene, 10);
+          if (this.onSelect) {
+            this.onSelect(sceneIndex);
+          }
+        });
       }
 
       focus(index) {
@@ -812,18 +803,6 @@
       exitToSelect();
     });
 
-    const randomSelectBtn = document.getElementById('randomSelectBtn');
-    randomSelectBtn.addEventListener('click', () => {
-      if (document.body.classList.contains('game-active')) {
-        return;
-      }
-      randomSelectBtn.disabled = true;
-      const tiles = Array.from(document.querySelectorAll('.character-tile'));
-      mk2RandomSelect(tiles, (chosenIndex) => {
-        randomSelectBtn.disabled = false;
-        launchScene(chosenIndex);
-      });
-    });
 
     document.addEventListener('keydown', (event) => {
       if (event.key === 'Escape' && document.body.classList.contains('game-active')) {
