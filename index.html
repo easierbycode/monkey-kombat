@@ -133,9 +133,38 @@
 
     .random-tile img {
       image-rendering: pixelated;
-      max-width: 50% !important;
-      max-height: 50% !important;
+      max-width: 75% !important;
+      max-height: 75% !important;
       filter: brightness(1.5) contrast(1.3) drop-shadow(0 0 8px rgba(255,215,0,0.4)) !important;
+    }
+
+    .random-tile .random-frame {
+      position: absolute;
+      animation: random-select-anim 0.4s steps(1) infinite;
+    }
+
+    .random-tile .random-frame:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .random-tile .random-frame:nth-child(1) {
+      animation: random-select-frame0 0.4s steps(1) infinite;
+    }
+
+    .random-tile .random-frame:nth-child(2) {
+      animation: random-select-frame1 0.4s steps(1) infinite;
+    }
+
+    @keyframes random-select-frame0 {
+      0%   { opacity: 1; }
+      50%  { opacity: 0; }
+      100% { opacity: 1; }
+    }
+
+    @keyframes random-select-frame1 {
+      0%   { opacity: 0; }
+      50%  { opacity: 1; }
+      100% { opacity: 0; }
     }
 
     .random-tile:hover {
@@ -461,7 +490,8 @@
       </a>
 
       <div class="character-tile random-tile" data-random="true">
-        <img src="assets/monkey-head.png" alt="Random Select">
+        <img class="random-frame" src="random-select0.png" alt="Random Select">
+        <img class="random-frame" src="random-select1.png" alt="Random Select">
       </div>
 
       <a href="#scene-10" class="character-tile" data-index="10" data-scene="10">
