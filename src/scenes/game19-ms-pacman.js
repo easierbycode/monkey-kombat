@@ -11,7 +11,7 @@ const MS_PAC_DIRECTIONS = ['left', 'right', 'left'];
 
 export default class Game extends Phaser.Scene {
   constructor() {
-    super({ key: 'Game14' });
+    super({ key: 'Game19' });
   }
 
   preload() {
