@@ -1,5 +1,5 @@
-import CountryBoxRoulette from '../sprites/country-box-roulette.js';
 import Monkey from '../sprites/monkey.js';
+import CountryBoxRoulette from '../sprites/country-box-roulette.js';
 
 const COUNTRY_BOX_ROULETTE_KEY = 'country-box-roulette';
 const COUNTRY_BOX_ROULETTE_FRAME_SIZE = 32;
@@ -44,6 +44,7 @@ export default class Game extends Phaser.Scene {
       frameHeight: 59,
       endFrame: 2
     });
+
   }
 
   lightning() {
@@ -83,6 +84,7 @@ export default class Game extends Phaser.Scene {
   create() {
     this.currentWidth = this.game.config.width;
     this.currentHeight = this.game.config.height;
+    this.monkeyDestroyed = false;
 
     this.countryBoxRoulette = new CountryBoxRoulette({
       scene: this,
@@ -130,6 +132,12 @@ export default class Game extends Phaser.Scene {
         repeat: -1
       });
     }
+
+    this.monkey = new Monkey({
+      scene: this,
+      x: this.barrel.x,
+      y: this.currentHeight
+    });
 
     this.physics.world.setBounds(0, 0, this.currentWidth, this.currentHeight, true, true, false, false);
     const colors = [0xffbb33, 0xd4af37, 0xfcdb06, 0xeeaa00, 0xeecc66, 0xff0000];
@@ -223,30 +231,42 @@ export default class Game extends Phaser.Scene {
               onComplete: () => {
                 if (this.emitter) this.emitter.destroy();
                 if (this.clownCar) this.clownCar.destroy();
-                this.emitter = null; // Clear reference
-
-                // Drop the barrel (with monkey riding on top)
-                if (this.barrel && this.barrel.active) {
-                  // Re-enable bottom world bound so barrel can hit the ground
-                  this.physics.world.setBoundsCollision(false, false, false, true);
-                  this.barrel.body.setAllowGravity(true);
-                  this.barrel.setVelocityY(200);
-                  this.barrel.body.setCollideWorldBounds(true, 0, 0, true);
-
-                  // Destroy monkey when barrel hits the ground
-                  this.physics.world.on('worldbounds', (body) => {
-                    if (body === this.barrel.body && this.monkey && this.monkey.active) {
-                      this.monkey.damage({ damagePoints: 1 });
-                    }
-                  });
-                }
-
-                document.dispatchEvent(new CustomEvent('enemy-defeated'));
+                this.emitter = null;
+                this.dropBarrel();
               }
             });
           }
         });
       }
     });
+  }
+
+  dropBarrel() {
+    if (!this.barrel || !this.barrel.active) return;
+
+    this.barrel.body.setGravityY(1200);
+
+    this.physics.add.overlap(this.barrel, this.monkey, this.onBarrelHitMonkey, null, this);
+  }
+
+  onBarrelHitMonkey() {
+    if (this.monkeyDestroyed) return;
+    this.monkeyDestroyed = true;
+
+    this.barrel.body.setGravityY(0);
+    this.barrel.body.setVelocity(0, 0);
+
+    if (this.monkey && this.monkey.active) {
+      this.monkey.destroy();
+    }
+
+    document.dispatchEvent(new CustomEvent('enemy-defeated'));
+  }
+
+  update() {
+    if (this.barrel && this.barrel.active && this.barrelFlame && this.barrelFlame.active) {
+      this.barrelFlame.x = this.barrel.getTopRight().x - 3;
+      this.barrelFlame.y = this.barrel.getTopRight().y + 8;
+    }
   }
 }
