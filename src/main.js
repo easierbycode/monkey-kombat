@@ -78,11 +78,11 @@ function resolveDebugFlag(debugOverride) {
 function computeDimensions() {
   const w = window.innerWidth;
   const h = window.innerHeight;
-  const scale = Math.min(w / constants.WIDTH, h / constants.HEIGHT);
+  const scale = Math.max(1, Math.floor(Math.min(w / constants.WIDTH, h / constants.HEIGHT)));
 
   return {
-    width: w / scale,
-    height: h / scale,
+    width: Math.ceil(w / scale),
+    height: Math.ceil(h / scale),
     scale,
   };
 }
