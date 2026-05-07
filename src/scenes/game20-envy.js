@@ -10,17 +10,26 @@ const ENVY_KICK_ANIM = 'envy-kick-once';
 
 const IDLE_DURATION_MS = 3500;
 const APPROACH_SPEED_PX_PER_SEC = 60;
-const CHASE_SPEED_PX_PER_SEC = 130;
+const CHASE_BASE_SPEED_PX_PER_SEC = 130;
+const CHASE_SPEED_INCREMENT = 22;
+const WALK_REF_SPEED_PX_PER_SEC = 60;
 
 const KICK_INITIAL_FRAMERATE = 10;
 const KICK_FRAMERATE_INCREMENT = 1;
-const KICK_DAMAGE_PER_CYCLE = 1;
 
-const KICK_LAUNCH_VX = 280;
-const KICK_LAUNCH_VY = -360;
+const KICK_BASE_DAMAGE = 1;
+const KICK_DAMAGE_INCREMENT = 1;
+
+const KICK_BASE_LAUNCH_VX = 240;
+const KICK_BASE_LAUNCH_VY = -340;
+const KICK_LAUNCH_VX_INCREMENT = 28;
+const KICK_LAUNCH_VY_INCREMENT = 22;
+
 const KICK_GRAVITY = 900;
 const KICK_BOUNCE = 0.55;
 const KICK_REACH_PX = 6;
+
+const MONKEY_BODY_WIDTH_FRACTION = 0.45;
 
 const FINISH_HIM_FREEZE_MS = 900;
 
@@ -63,7 +72,7 @@ export default class Game extends Phaser.Scene {
   create() {
     this.state = STATE_IDLE;
     this.monkeyDestroyed = false;
-    this.kickFrameRate = KICK_INITIAL_FRAMERATE;
+    this.kicksDelivered = 0;
     this.finishHimShown = false;
 
     this.createAnimations();
@@ -147,6 +156,13 @@ export default class Game extends Phaser.Scene {
     this.monkey.body.setBounce(KICK_BOUNCE, KICK_BOUNCE);
     this.monkey.body.setDragX(60);
 
+    const fullW = this.monkey.width;
+    const fullH = this.monkey.height;
+    const trimmedW = Math.max(2, Math.round(fullW * MONKEY_BODY_WIDTH_FRACTION));
+    const offsetX = Math.round((fullW - trimmedW) / 2);
+    this.monkey.body.setSize(trimmedW, fullH);
+    this.monkey.body.setOffset(offsetX, 0);
+
     if (typeof this.monkey.enableFilters === 'function') {
       this.monkey.enableFilters();
       const filters = this.monkey.filters?.external;
@@ -202,12 +218,41 @@ export default class Game extends Phaser.Scene {
       && !!this.envy?.active;
   }
 
+  currentChaseSpeed() {
+    return CHASE_BASE_SPEED_PX_PER_SEC + this.kicksDelivered * CHASE_SPEED_INCREMENT;
+  }
+
+  currentKickFrameRate() {
+    return KICK_INITIAL_FRAMERATE + this.kicksDelivered * KICK_FRAMERATE_INCREMENT;
+  }
+
+  currentKickDamage() {
+    return KICK_BASE_DAMAGE + this.kicksDelivered * KICK_DAMAGE_INCREMENT;
+  }
+
+  currentLaunchVelocity() {
+    return {
+      vx: KICK_BASE_LAUNCH_VX + this.kicksDelivered * KICK_LAUNCH_VX_INCREMENT,
+      vy: KICK_BASE_LAUNCH_VY - this.kicksDelivered * KICK_LAUNCH_VY_INCREMENT
+    };
+  }
+
+  syncWalkAnimToSpeed(speed) {
+    if (!this.envy?.anims) {
+      return;
+    }
+    if (this.envy.anims.currentAnim?.key !== ENVY_WALK_ANIM) {
+      this.envy.play(ENVY_WALK_ANIM);
+    }
+    this.envy.anims.timeScale = Math.max(0.5, speed / WALK_REF_SPEED_PX_PER_SEC);
+  }
+
   beginApproach() {
     if (this.state !== STATE_IDLE || this.monkeyDestroyed) {
       return;
     }
     this.state = STATE_APPROACH;
-    this.envy.play(ENVY_WALK_ANIM);
+    this.syncWalkAnimToSpeed(APPROACH_SPEED_PX_PER_SEC);
   }
 
   beginChase() {
@@ -215,9 +260,7 @@ export default class Game extends Phaser.Scene {
       return;
     }
     this.state = STATE_CHASING;
-    if (this.envy.anims.currentAnim?.key !== ENVY_WALK_ANIM) {
-      this.envy.play(ENVY_WALK_ANIM);
-    }
+    this.syncWalkAnimToSpeed(this.currentChaseSpeed());
   }
 
   update() {
@@ -230,7 +273,7 @@ export default class Game extends Phaser.Scene {
     if (this.state === STATE_APPROACH) {
       this.stepEnvyTowardMonkey(APPROACH_SPEED_PX_PER_SEC);
     } else if (this.state === STATE_CHASING) {
-      this.stepEnvyTowardMonkey(CHASE_SPEED_PX_PER_SEC);
+      this.stepEnvyTowardMonkey(this.currentChaseSpeed());
     }
   }
 
@@ -257,7 +300,7 @@ export default class Game extends Phaser.Scene {
       return;
     }
 
-    const willKill = (this.monkey.health - KICK_DAMAGE_PER_CYCLE) <= 0;
+    const willKill = (this.monkey.health - this.currentKickDamage()) <= 0;
 
     if (willKill && !this.finishHimShown) {
       this.beginFinishHim();
@@ -270,20 +313,21 @@ export default class Game extends Phaser.Scene {
   performKick() {
     this.state = STATE_KICKING;
 
-    this.envy.anims.timeScale = this.kickFrameRate / KICK_INITIAL_FRAMERATE;
+    this.envy.anims.timeScale = this.currentKickFrameRate() / KICK_INITIAL_FRAMERATE;
     this.envy.play(ENVY_KICK_ANIM);
 
     this.cameras.main?.shake(80, 0.006);
     this.cameras.main?.flash(40, 255, 240, 220, true);
     this.spawnKickBloodSplat();
+    this.spawnSuzieBloodDrip();
     this.pulseMonkeyBarrel();
     this.hitStop();
     this.launchMonkey();
 
-    this.monkey.damage({ damagePoints: KICK_DAMAGE_PER_CYCLE });
+    this.monkey.damage({ damagePoints: this.currentKickDamage() });
     this.refreshHpText();
 
-    this.kickFrameRate += KICK_FRAMERATE_INCREMENT;
+    this.kicksDelivered += 1;
   }
 
   onKickAnimComplete() {
@@ -304,9 +348,10 @@ export default class Game extends Phaser.Scene {
     }
 
     const dir = this.envy.x <= this.monkey.x ? 1 : -1;
+    const { vx, vy } = this.currentLaunchVelocity();
     this.monkey.body.setAllowGravity(true);
     this.monkey.body.setGravityY(KICK_GRAVITY);
-    this.monkey.body.setVelocity(dir * KICK_LAUNCH_VX, KICK_LAUNCH_VY);
+    this.monkey.body.setVelocity(dir * vx, vy);
   }
 
   beginFinishHim() {
@@ -364,12 +409,13 @@ export default class Game extends Phaser.Scene {
     }
 
     this.state = STATE_KICKING;
-    this.envy.anims.timeScale = (this.kickFrameRate + 4) / KICK_INITIAL_FRAMERATE;
+    this.envy.anims.timeScale = (this.currentKickFrameRate() + 4) / KICK_INITIAL_FRAMERATE;
     this.envy.play(ENVY_KICK_ANIM);
 
     this.cameras.main?.shake(220, 0.018);
     this.cameras.main?.flash(120, 255, 240, 220, true);
     this.spawnKickBloodSplat();
+    this.spawnSuzieBloodDrip(1.6);
     this.pulseMonkeyBarrel();
     this.launchMonkey();
 
@@ -424,6 +470,40 @@ export default class Game extends Phaser.Scene {
       }
       if (this.monkey?.active && monkeyAnims) {
         monkeyAnims.resume();
+      }
+    });
+  }
+
+  spawnSuzieBloodDrip(intensity = 1) {
+    if (!this.monkey || !this.monkey.active) {
+      return;
+    }
+
+    const w = this.monkey.displayWidth * 0.7;
+    const h = this.monkey.displayHeight * 0.45;
+    const x = this.monkey.x - (w / 2);
+    const y = this.monkey.y - this.monkey.displayHeight + (this.monkey.displayHeight * 0.1);
+
+    const emitter = this.add.particles(x, y, 'blood', {
+      frame: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+      emitZone: { source: new Phaser.Geom.Rectangle(0, 0, w, h) },
+      lifespan: { min: 500, max: 900 },
+      gravityY: 300,
+      speedY: { min: 40, max: 120 },
+      speedX: { min: -10, max: 10 },
+      scale: { start: 0.8 * intensity, end: 0 },
+      quantity: Math.max(1, Math.round(2 * intensity)),
+      frequency: 90
+    });
+
+    this.time.delayedCall(280, () => {
+      if (emitter && typeof emitter.stop === 'function') {
+        emitter.stop();
+      }
+    });
+    this.time.delayedCall(1500, () => {
+      if (emitter && typeof emitter.destroy === 'function') {
+        emitter.destroy();
       }
     });
   }
