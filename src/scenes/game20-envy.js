@@ -116,6 +116,17 @@ export default class Game extends Phaser.Scene {
     this.monkey.setDepth(2);
     this.monkey.body.setAllowGravity(false);
     this.monkey.body.setImmovable(true);
+
+    if (typeof this.monkey.enableFilters === 'function') {
+      this.monkey.enableFilters();
+      const filters = this.monkey.filters?.external;
+      if (filters && typeof filters.addBarrel === 'function') {
+        this.monkeyBarrel = filters.addBarrel(1);
+      }
+      if (filters && typeof filters.addBokeh === 'function') {
+        this.monkeyBokeh = filters.addBokeh(0, 1, 0.5);
+      }
+    }
   }
 
   createEnvy() {
@@ -212,17 +223,99 @@ export default class Game extends Phaser.Scene {
     this.envy.on(Phaser.Animations.Events.ANIMATION_REPEAT, this.onKickCycle, this);
   }
 
+  pulseMonkeyBokeh() {
+    if (!this.monkeyBokeh) {
+      return;
+    }
+
+    if (this.bokehTween) {
+      this.bokehTween.stop();
+      this.bokehTween = null;
+    }
+
+    this.monkeyBokeh.radius = 0;
+    this.bokehTween = this.tweens.add({
+      targets: this.monkeyBokeh,
+      radius: 6,
+      duration: 110,
+      yoyo: true,
+      ease: 'Quad.easeOut',
+      onComplete: () => {
+        if (this.monkeyBokeh) {
+          this.monkeyBokeh.radius = 0;
+        }
+        this.bokehTween = null;
+      }
+    });
+  }
+
+  pulseMonkeyBarrel() {
+    if (!this.monkeyBarrel) {
+      return;
+    }
+
+    if (this.barrelTween) {
+      this.barrelTween.stop();
+      this.barrelTween = null;
+    }
+
+    this.monkeyBarrel.amount = 1;
+    this.barrelTween = this.tweens.add({
+      targets: this.monkeyBarrel,
+      amount: 1.5,
+      duration: 90,
+      yoyo: true,
+      ease: 'Sine.easeOut',
+      onComplete: () => {
+        if (this.monkeyBarrel) {
+          this.monkeyBarrel.amount = 1;
+        }
+        this.barrelTween = null;
+      }
+    });
+  }
+
+  spawnKickBloodSplat() {
+    if (!this.monkey || !this.monkey.active) {
+      return;
+    }
+
+    const splatX = this.monkey.x;
+    const splatY = this.monkey.y - (this.monkey.displayHeight * 0.55);
+
+    const emitter = this.add.particles(splatX, splatY, 'blood', {
+      frame: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+      lifespan: { min: 350, max: 650 },
+      gravityY: 300,
+      speedY: { min: 40, max: 120 },
+      speedX: { min: -90, max: 90 },
+      scale: { start: 0.8, end: 0 },
+      emitting: false
+    });
+
+    emitter.explode(10, splatX, splatY);
+
+    this.time.delayedCall(900, () => {
+      if (emitter && typeof emitter.destroy === 'function') {
+        emitter.destroy();
+      }
+    });
+  }
+
   onKickCycle() {
     if (this.monkeyDestroyed || !this.monkey || !this.monkey.active) {
       return;
     }
 
     this.cameras.main?.shake(80, 0.006);
+    this.spawnKickBloodSplat();
+    this.pulseMonkeyBarrel();
+    this.pulseMonkeyBokeh();
 
-    this.monkey.health -= KICK_DAMAGE_PER_CYCLE;
+    const isDead = this.monkey.damage({ damagePoints: KICK_DAMAGE_PER_CYCLE });
     this.refreshHpText();
 
-    if (this.monkey.health <= 0) {
+    if (isDead) {
       this.killMonkey();
       return;
     }
@@ -242,10 +335,6 @@ export default class Game extends Phaser.Scene {
     this.envy.off(Phaser.Animations.Events.ANIMATION_REPEAT, this.onKickCycle, this);
     this.envy.stop();
     this.envy.setFrame('atlas_s0');
-
-    if (this.monkey && this.monkey.active) {
-      this.monkey.destroy();
-    }
 
     this.refreshHpText();
     document.dispatchEvent(new CustomEvent('enemy-defeated'));
