@@ -31,6 +31,7 @@ const KICK_REACH_PX = 6;
 
 const MONKEY_BODY_WIDTH_FRACTION = 0.45;
 
+const KICK_IMPACT_FRAME = 'atlas_s5';
 const FINISHER_EXTENDED_FRAME = 'atlas_s5';
 const FINISHER_ADVANCE_FRAME = 'atlas_s6';
 const FINISHER_DRAMATIC_HOLD_MS = 900;
@@ -340,20 +341,52 @@ export default class Game extends Phaser.Scene {
     this.state = STATE_KICKING;
 
     this.envy.anims.timeScale = this.currentKickFrameRate() / KICK_INITIAL_FRAMERATE;
+
+    const onUpdate = (anim, frame) => {
+      if (!frame || frame.textureFrame !== KICK_IMPACT_FRAME) {
+        return;
+      }
+      this.envy.off(Phaser.Animations.Events.ANIMATION_UPDATE, onUpdate);
+      this.tryKickHit();
+    };
+    this.envy.on(Phaser.Animations.Events.ANIMATION_UPDATE, onUpdate);
+
     this.envy.play(ENVY_KICK_ANIM);
+  }
 
-    this.cameras.main?.shake(80, 0.006);
-    this.cameras.main?.flash(40, 255, 240, 220, true);
-    this.spawnKickBloodSplat();
-    this.spawnSuzieBloodDrip();
-    this.pulseMonkeyBarrel();
-    this.hitStop();
-    this.launchMonkey();
+  tryKickHit() {
+    if (this.monkeyDestroyed || !this.monkey?.active) {
+      this.kicksDelivered += 1;
+      return;
+    }
 
-    this.monkey.damage({ damagePoints: this.currentKickDamage() });
-    this.refreshHpText();
+    const connected = this.bodiesOverlap();
+    if (connected) {
+      this.cameras.main?.shake(80, 0.006);
+      this.cameras.main?.flash(40, 255, 240, 220, true);
+      this.spawnKickBloodSplat();
+      this.spawnSuzieBloodDrip();
+      this.pulseMonkeyBarrel();
+      this.hitStop();
+      this.launchMonkey();
+
+      this.monkey.damage({ damagePoints: this.currentKickDamage() });
+      this.refreshHpText();
+    }
 
     this.kicksDelivered += 1;
+  }
+
+  bodiesOverlap() {
+    const e = this.envy?.body;
+    const m = this.monkey?.body;
+    if (!e || !m) {
+      return false;
+    }
+    return !(e.right < m.left
+      || e.left > m.right
+      || e.bottom < m.top
+      || e.top > m.bottom);
   }
 
   onKickAnimComplete() {
