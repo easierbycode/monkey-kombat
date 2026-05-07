@@ -218,18 +218,13 @@ export default class Game extends Phaser.Scene {
   }
 
   createHpText() {
-    this.hpText = this.add.text(8, 8, this.formatHp(), {
-      font: '16px monospace',
-      color: '#ffffff',
-      stroke: '#000000',
-      strokeThickness: 3
-    });
+    this.hpText = this.add.bitmapText(8, 8, FONT_KEY, this.formatHp());
     this.hpText.setDepth(10);
   }
 
   formatHp() {
     const hp = Math.max(0, this.monkey?.health ?? 0);
-    return `MONKEY HP: ${hp}`;
+    return `MONKEY HP ${hp}`;
   }
 
   refreshHpText() {
