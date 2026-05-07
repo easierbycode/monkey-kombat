@@ -123,9 +123,6 @@ export default class Game extends Phaser.Scene {
       if (filters && typeof filters.addBarrel === 'function') {
         this.monkeyBarrel = filters.addBarrel(1);
       }
-      if (filters && typeof filters.addBokeh === 'function') {
-        this.monkeyBokeh = filters.addBokeh(0, 1, 0.5);
-      }
     }
   }
 
@@ -223,32 +220,6 @@ export default class Game extends Phaser.Scene {
     this.envy.on(Phaser.Animations.Events.ANIMATION_REPEAT, this.onKickCycle, this);
   }
 
-  pulseMonkeyBokeh() {
-    if (!this.monkeyBokeh) {
-      return;
-    }
-
-    if (this.bokehTween) {
-      this.bokehTween.stop();
-      this.bokehTween = null;
-    }
-
-    this.monkeyBokeh.radius = 0;
-    this.bokehTween = this.tweens.add({
-      targets: this.monkeyBokeh,
-      radius: 6,
-      duration: 110,
-      yoyo: true,
-      ease: 'Quad.easeOut',
-      onComplete: () => {
-        if (this.monkeyBokeh) {
-          this.monkeyBokeh.radius = 0;
-        }
-        this.bokehTween = null;
-      }
-    });
-  }
-
   pulseMonkeyBarrel() {
     if (!this.monkeyBarrel) {
       return;
@@ -262,15 +233,38 @@ export default class Game extends Phaser.Scene {
     this.monkeyBarrel.amount = 1;
     this.barrelTween = this.tweens.add({
       targets: this.monkeyBarrel,
-      amount: 1.5,
-      duration: 90,
+      amount: 1.12,
+      duration: 60,
       yoyo: true,
-      ease: 'Sine.easeOut',
+      ease: 'Quad.easeOut',
       onComplete: () => {
         if (this.monkeyBarrel) {
           this.monkeyBarrel.amount = 1;
         }
         this.barrelTween = null;
+      }
+    });
+  }
+
+  hitStop() {
+    if (!this.envy?.anims || this.hitStopActive) {
+      return;
+    }
+    this.hitStopActive = true;
+
+    const envyAnims = this.envy.anims;
+    const monkeyAnims = this.monkey?.anims;
+
+    envyAnims.pause();
+    monkeyAnims?.pause();
+
+    this.time.delayedCall(70, () => {
+      this.hitStopActive = false;
+      if (this.envy?.active) {
+        envyAnims.resume();
+      }
+      if (this.monkey?.active && monkeyAnims) {
+        monkeyAnims.resume();
       }
     });
   }
@@ -308,9 +302,10 @@ export default class Game extends Phaser.Scene {
     }
 
     this.cameras.main?.shake(80, 0.006);
+    this.cameras.main?.flash(40, 255, 240, 220, true);
     this.spawnKickBloodSplat();
     this.pulseMonkeyBarrel();
-    this.pulseMonkeyBokeh();
+    this.hitStop();
 
     const isDead = this.monkey.damage({ damagePoints: KICK_DAMAGE_PER_CYCLE });
     this.refreshHpText();
