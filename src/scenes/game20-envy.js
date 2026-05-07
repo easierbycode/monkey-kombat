@@ -31,6 +31,11 @@ const KICK_REACH_PX = 6;
 
 const MONKEY_BODY_WIDTH_FRACTION = 0.45;
 
+const KICK_FINAL_FRAME = 'atlas_s7';
+
+const HAPTIC_KICK_MS = 40;
+const HAPTIC_FINISHER_PATTERN = [80, 40, 160];
+
 const FINISHER_EXTENDED_FRAME = 'atlas_s5';
 const FINISHER_ADVANCE_FRAME = 'atlas_s6';
 const FINISHER_DRAMATIC_HOLD_MS = 900;
@@ -40,7 +45,9 @@ const FINISH_HIM_TEXT = 'FINISH HIM';
 const FINISH_HIM_CHAR_DELAY_MS = 100;
 const FINISH_HIM_CHAR_DURATION_MS = 400;
 const FINISH_HIM_POST_TEXT_HOLD_MS = 600;
-const FINISH_HIM_CHAR_WIDTH = 16;
+const FONT_NATIVE_SIZE = 16;
+const FINISH_HIM_FONT_SIZE = 40;
+const FINISH_HIM_CHAR_WIDTH = FINISH_HIM_FONT_SIZE;
 const FONT_KEY = 'font-mkii';
 
 const MONKEY_START_HP = 99;
@@ -115,8 +122,8 @@ export default class Game extends Phaser.Scene {
     }
     const fontConfig = {
       image: FONT_KEY,
-      height: FINISH_HIM_CHAR_WIDTH,
-      width: FINISH_HIM_CHAR_WIDTH,
+      height: FONT_NATIVE_SIZE,
+      width: FONT_NATIVE_SIZE,
       chars: Phaser.GameObjects.RetroFont.TEXT_SET3
     };
     this.cache.bitmapFont.add(FONT_KEY, Phaser.GameObjects.RetroFont.Parse(this, fontConfig));
@@ -334,7 +341,21 @@ export default class Game extends Phaser.Scene {
   performKick() {
     this.state = STATE_KICKING;
 
+    const launchDir = this.envy.x <= this.monkey.x ? 1 : -1;
+    const { vx, vy } = this.currentLaunchVelocity();
+
     this.envy.anims.timeScale = this.currentKickFrameRate() / KICK_INITIAL_FRAMERATE;
+
+    const onUpdate = (anim, frame) => {
+      if (!frame || frame.textureFrame !== KICK_FINAL_FRAME) {
+        return;
+      }
+      this.envy.off(Phaser.Animations.Events.ANIMATION_UPDATE, onUpdate);
+      this.launchMonkey(launchDir, vx, vy);
+      this.triggerHaptic(HAPTIC_KICK_MS);
+    };
+    this.envy.on(Phaser.Animations.Events.ANIMATION_UPDATE, onUpdate);
+
     this.envy.play(ENVY_KICK_ANIM);
 
     this.cameras.main?.shake(80, 0.006);
@@ -343,7 +364,6 @@ export default class Game extends Phaser.Scene {
     this.spawnSuzieBloodDrip();
     this.pulseMonkeyBarrel();
     this.hitStop();
-    this.launchMonkey();
 
     this.monkey.damage({ damagePoints: this.currentKickDamage() });
     this.refreshHpText();
@@ -363,16 +383,31 @@ export default class Game extends Phaser.Scene {
     this.beginChase();
   }
 
-  launchMonkey() {
+  launchMonkey(dir, vx, vy) {
     if (!this.monkey?.active || !this.monkey.body) {
       return;
     }
 
-    const dir = this.envy.x <= this.monkey.x ? 1 : -1;
-    const { vx, vy } = this.currentLaunchVelocity();
+    if (dir === undefined) {
+      dir = this.envy.x <= this.monkey.x ? 1 : -1;
+    }
+    if (vx === undefined || vy === undefined) {
+      ({ vx, vy } = this.currentLaunchVelocity());
+    }
     this.monkey.body.setAllowGravity(true);
     this.monkey.body.setGravityY(KICK_GRAVITY);
     this.monkey.body.setVelocity(dir * vx, vy);
+  }
+
+  triggerHaptic(pattern) {
+    if (typeof navigator === 'undefined' || typeof navigator.vibrate !== 'function') {
+      return;
+    }
+    try {
+      navigator.vibrate(pattern);
+    } catch (_) {
+      /* noop */
+    }
   }
 
   beginFinishHim() {
@@ -398,7 +433,7 @@ export default class Game extends Phaser.Scene {
 
     this.finishHimChars = chars.map((char, index) => {
       const x = cx - (totalWidth / 2) + (index * FINISH_HIM_CHAR_WIDTH) + (FINISH_HIM_CHAR_WIDTH / 2);
-      const charText = this.add.bitmapText(x, cy - 80, FONT_KEY, char)
+      const charText = this.add.bitmapText(x, cy - 80, FONT_KEY, char, FINISH_HIM_FONT_SIZE)
         .setOrigin(0.5)
         .setAlpha(0)
         .setTint(0xff2222)
@@ -469,6 +504,7 @@ export default class Game extends Phaser.Scene {
     this.spawnSuzieBloodDrip(1.6);
     this.pulseMonkeyBarrel();
     this.launchMonkey();
+    this.triggerHaptic(HAPTIC_FINISHER_PATTERN);
 
     if (this.monkey?.active) {
       this.monkey.damage({ damagePoints: this.monkey.health });
