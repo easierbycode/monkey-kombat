@@ -32,6 +32,10 @@ const KICK_REACH_PX = 6;
 const MONKEY_BODY_WIDTH_FRACTION = 0.45;
 
 const FINISH_HIM_FREEZE_MS = 900;
+const FINISHER_EXTENDED_FRAME = 'atlas_s5';
+const FINISHER_ADVANCE_FRAME = 'atlas_s6';
+const FINISHER_DRAMATIC_HOLD_MS = 900;
+const FINISHER_ADVANCE_HOLD_MS = 350;
 
 const MONKEY_START_HP = 99;
 
@@ -410,7 +414,23 @@ export default class Game extends Phaser.Scene {
 
     this.state = STATE_KICKING;
     this.envy.anims.timeScale = (this.currentKickFrameRate() + 4) / KICK_INITIAL_FRAMERATE;
+
+    const onUpdate = (anim, frame) => {
+      if (!frame || frame.textureFrame !== FINISHER_EXTENDED_FRAME) {
+        return;
+      }
+      this.envy.off(Phaser.Animations.Events.ANIMATION_UPDATE, onUpdate);
+      this.onFinisherImpact();
+    };
+    this.envy.on(Phaser.Animations.Events.ANIMATION_UPDATE, onUpdate);
+
     this.envy.play(ENVY_KICK_ANIM);
+  }
+
+  onFinisherImpact() {
+    if (this.monkeyDestroyed) {
+      return;
+    }
 
     this.cameras.main?.shake(220, 0.018);
     this.cameras.main?.flash(120, 255, 240, 220, true);
@@ -419,10 +439,29 @@ export default class Game extends Phaser.Scene {
     this.pulseMonkeyBarrel();
     this.launchMonkey();
 
-    this.monkey.damage({ damagePoints: this.monkey.health });
+    if (this.monkey?.active) {
+      this.monkey.damage({ damagePoints: this.monkey.health });
+    }
     this.refreshHpText();
-
     this.killMonkey();
+
+    this.envy.anims.pause();
+
+    this.time.delayedCall(FINISHER_DRAMATIC_HOLD_MS, () => {
+      if (!this.envy?.active) {
+        return;
+      }
+      this.envy.setFrame(FINISHER_ADVANCE_FRAME);
+
+      this.time.delayedCall(FINISHER_ADVANCE_HOLD_MS, () => {
+        if (!this.envy?.active) {
+          return;
+        }
+        this.envy.anims.stop();
+        this.envy.anims.timeScale = 1;
+        this.envy.play(ENVY_IDLE_ANIM);
+      });
+    });
   }
 
   pulseMonkeyBarrel() {
@@ -548,9 +587,6 @@ export default class Game extends Phaser.Scene {
     }
 
     this.envy.off(`animationcomplete-${ENVY_KICK_ANIM}`, this.onKickAnimComplete, this);
-    this.envy.anims.stop();
-    this.envy.setTexture(ENVY_IDLE_KEY, 'atlas_s0');
-    this.envy.y = this.game.config.height;
 
     this.refreshHpText();
     document.dispatchEvent(new CustomEvent('enemy-defeated'));
