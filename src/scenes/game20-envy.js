@@ -6,17 +6,32 @@ const ENVY_KICK_KEY = 'envy-kick';
 
 const ENVY_IDLE_ANIM = 'envy-idle-loop';
 const ENVY_WALK_ANIM = 'envy-walk-loop';
-const ENVY_KICK_ANIM = 'envy-kick-loop';
+const ENVY_KICK_ANIM = 'envy-kick-once';
 
 const IDLE_DURATION_MS = 3500;
-const GAP_FROM_MONKEY = 4;
-const WALK_SPEED_PX_PER_SEC = 50;
+const APPROACH_SPEED_PX_PER_SEC = 60;
+const CHASE_SPEED_PX_PER_SEC = 130;
 
-const KICK_INITIAL_FRAMERATE = 8;
+const KICK_INITIAL_FRAMERATE = 10;
 const KICK_FRAMERATE_INCREMENT = 1;
 const KICK_DAMAGE_PER_CYCLE = 1;
 
+const KICK_LAUNCH_VX = 280;
+const KICK_LAUNCH_VY = -360;
+const KICK_GRAVITY = 900;
+const KICK_BOUNCE = 0.55;
+const KICK_REACH_PX = 6;
+
+const FINISH_HIM_FREEZE_MS = 900;
+
 const MONKEY_START_HP = 99;
+
+const STATE_IDLE = 'idle';
+const STATE_APPROACH = 'approach';
+const STATE_KICKING = 'kicking';
+const STATE_CHASING = 'chasing';
+const STATE_FINISH_HIM = 'finish-him';
+const STATE_DONE = 'done';
 
 export default class Game extends Phaser.Scene {
   constructor() {
@@ -46,16 +61,27 @@ export default class Game extends Phaser.Scene {
   }
 
   create() {
-    this.kicking = false;
+    this.state = STATE_IDLE;
     this.monkeyDestroyed = false;
     this.kickFrameRate = KICK_INITIAL_FRAMERATE;
+    this.finishHimShown = false;
 
     this.createAnimations();
     this.createMonkey();
     this.createEnvy();
     this.createHpText();
 
-    this.time.delayedCall(IDLE_DURATION_MS, () => this.startWalking());
+    this.physics.world.setBounds(0, 0, this.game.config.width, this.game.config.height);
+
+    this.kickOverlap = this.physics.add.overlap(
+      this.envy,
+      this.monkey,
+      () => this.onContact(),
+      () => this.canKick(),
+      this
+    );
+
+    this.time.delayedCall(IDLE_DURATION_MS, () => this.beginApproach());
 
     this.events.once('shutdown', () => this.cleanup());
     this.events.once('destroy', () => this.cleanup());
@@ -98,7 +124,7 @@ export default class Game extends Phaser.Scene {
         end: 7
       }),
       frameRate: KICK_INITIAL_FRAMERATE,
-      repeat: -1
+      repeat: 0
     });
   }
 
@@ -114,8 +140,12 @@ export default class Game extends Phaser.Scene {
     this.monkey.x -= this.monkey.displayWidth / 2;
     this.monkey.health = MONKEY_START_HP;
     this.monkey.setDepth(2);
+
     this.monkey.body.setAllowGravity(false);
-    this.monkey.body.setImmovable(true);
+    this.monkey.body.setImmovable(false);
+    this.monkey.body.setCollideWorldBounds(true);
+    this.monkey.body.setBounce(KICK_BOUNCE, KICK_BOUNCE);
+    this.monkey.body.setDragX(60);
 
     if (typeof this.monkey.enableFilters === 'function') {
       this.monkey.enableFilters();
@@ -141,6 +171,8 @@ export default class Game extends Phaser.Scene {
     this.envy.body.setImmovable(true);
 
     this.envy.play(ENVY_IDLE_ANIM);
+
+    this.envy.on(`animationcomplete-${ENVY_KICK_ANIM}`, this.onKickAnimComplete, this);
   }
 
   createHpText() {
@@ -164,60 +196,187 @@ export default class Game extends Phaser.Scene {
     }
   }
 
-  computeEnvyTargetX() {
-    const monkeyLeftEdge = this.monkey.x - (this.monkey.displayWidth * this.monkey.originX);
-    const envyRightWidth = this.envy.displayWidth * (1 - this.envy.originX);
-    return monkeyLeftEdge - GAP_FROM_MONKEY - envyRightWidth;
+  canKick() {
+    return (this.state === STATE_APPROACH || this.state === STATE_CHASING)
+      && !!this.monkey?.active
+      && !!this.envy?.active;
   }
 
-  startWalking() {
-    if (!this.envy || !this.envy.active || this.monkeyDestroyed) {
+  beginApproach() {
+    if (this.state !== STATE_IDLE || this.monkeyDestroyed) {
+      return;
+    }
+    this.state = STATE_APPROACH;
+    this.envy.play(ENVY_WALK_ANIM);
+  }
+
+  beginChase() {
+    if (this.monkeyDestroyed) {
+      return;
+    }
+    this.state = STATE_CHASING;
+    if (this.envy.anims.currentAnim?.key !== ENVY_WALK_ANIM) {
+      this.envy.play(ENVY_WALK_ANIM);
+    }
+  }
+
+  update() {
+    if (!this.envy?.active) {
       return;
     }
 
-    this.envy.play(ENVY_WALK_ANIM);
+    this.envy.y = this.game.config.height;
 
-    const targetX = this.computeEnvyTargetX();
-    const distance = Math.max(0, targetX - this.envy.x);
-    const duration = (distance / WALK_SPEED_PX_PER_SEC) * 1000;
+    if (this.state === STATE_APPROACH) {
+      this.stepEnvyTowardMonkey(APPROACH_SPEED_PX_PER_SEC);
+    } else if (this.state === STATE_CHASING) {
+      this.stepEnvyTowardMonkey(CHASE_SPEED_PX_PER_SEC);
+    }
+  }
 
-    this.walkTween = this.tweens.add({
-      targets: this.envy,
-      x: targetX,
-      duration,
-      ease: 'Linear',
-      onComplete: () => this.startKicking()
+  stepEnvyTowardMonkey(speed) {
+    if (!this.monkey?.active) {
+      return;
+    }
+    const dt = this.game.loop.delta / 1000;
+    const dx = this.monkey.x - this.envy.x;
+    const sign = Math.sign(dx);
+    const step = speed * dt;
+    const distance = Math.abs(dx);
+
+    if (distance <= KICK_REACH_PX) {
+      return;
+    }
+
+    this.envy.x += sign * Math.min(step, distance - KICK_REACH_PX);
+    this.envy.setFlipX(sign < 0);
+  }
+
+  onContact() {
+    if (!this.canKick()) {
+      return;
+    }
+
+    const willKill = (this.monkey.health - KICK_DAMAGE_PER_CYCLE) <= 0;
+
+    if (willKill && !this.finishHimShown) {
+      this.beginFinishHim();
+      return;
+    }
+
+    this.performKick();
+  }
+
+  performKick() {
+    this.state = STATE_KICKING;
+
+    this.envy.anims.timeScale = this.kickFrameRate / KICK_INITIAL_FRAMERATE;
+    this.envy.play(ENVY_KICK_ANIM);
+
+    this.cameras.main?.shake(80, 0.006);
+    this.cameras.main?.flash(40, 255, 240, 220, true);
+    this.spawnKickBloodSplat();
+    this.pulseMonkeyBarrel();
+    this.hitStop();
+    this.launchMonkey();
+
+    this.monkey.damage({ damagePoints: KICK_DAMAGE_PER_CYCLE });
+    this.refreshHpText();
+
+    this.kickFrameRate += KICK_FRAMERATE_INCREMENT;
+  }
+
+  onKickAnimComplete() {
+    if (this.state !== STATE_KICKING) {
+      return;
+    }
+    if (this.monkeyDestroyed) {
+      this.envy.stop();
+      this.envy.setFrame('atlas_s0');
+      return;
+    }
+    this.beginChase();
+  }
+
+  launchMonkey() {
+    if (!this.monkey?.active || !this.monkey.body) {
+      return;
+    }
+
+    const dir = this.envy.x <= this.monkey.x ? 1 : -1;
+    this.monkey.body.setAllowGravity(true);
+    this.monkey.body.setGravityY(KICK_GRAVITY);
+    this.monkey.body.setVelocity(dir * KICK_LAUNCH_VX, KICK_LAUNCH_VY);
+  }
+
+  beginFinishHim() {
+    if (this.finishHimShown) {
+      return;
+    }
+    this.finishHimShown = true;
+    this.state = STATE_FINISH_HIM;
+
+    this.envy.stop();
+    this.envy.setFrame('atlas_s0');
+
+    if (this.monkey?.body) {
+      this.monkey.body.setVelocity(0, 0);
+    }
+
+    const text = this.add.text(
+      this.game.config.width / 2,
+      this.game.config.height / 2,
+      'FINISH HIM!',
+      {
+        fontFamily: '"Bangers", monospace',
+        fontSize: '36px',
+        color: '#ff2222',
+        stroke: '#220000',
+        strokeThickness: 5
+      }
+    ).setOrigin(0.5).setDepth(20);
+
+    this.tweens.add({
+      targets: text,
+      scale: { from: 0.4, to: 1.1 },
+      alpha: { from: 0, to: 1 },
+      duration: 220,
+      ease: 'Back.easeOut',
+      yoyo: false
     });
 
-    this.kickOverlap = this.physics.add.overlap(
-      this.envy,
-      this.monkey,
-      () => this.startKicking(),
-      null,
-      this
-    );
+    this.cameras.main?.flash(120, 255, 0, 0);
+
+    this.time.delayedCall(FINISH_HIM_FREEZE_MS, () => {
+      this.tweens.add({
+        targets: text,
+        alpha: 0,
+        duration: 220,
+        onComplete: () => text.destroy()
+      });
+      this.deliverFinisher();
+    });
   }
 
-  startKicking() {
-    if (this.kicking || this.monkeyDestroyed) {
+  deliverFinisher() {
+    if (this.monkeyDestroyed || !this.monkey?.active) {
       return;
     }
-    this.kicking = true;
 
-    if (this.walkTween) {
-      this.walkTween.stop();
-      this.walkTween = null;
-    }
-    if (this.kickOverlap) {
-      this.physics.world.removeCollider(this.kickOverlap);
-      this.kickOverlap = null;
-    }
-
-    const targetX = this.computeEnvyTargetX();
-    this.envy.x = Math.min(this.envy.x, targetX);
-
+    this.state = STATE_KICKING;
+    this.envy.anims.timeScale = (this.kickFrameRate + 4) / KICK_INITIAL_FRAMERATE;
     this.envy.play(ENVY_KICK_ANIM);
-    this.envy.on(Phaser.Animations.Events.ANIMATION_REPEAT, this.onKickCycle, this);
+
+    this.cameras.main?.shake(220, 0.018);
+    this.cameras.main?.flash(120, 255, 240, 220, true);
+    this.spawnKickBloodSplat();
+    this.pulseMonkeyBarrel();
+    this.launchMonkey();
+
+    this.monkey.damage({ damagePoints: this.monkey.health });
+    this.refreshHpText();
+
+    this.killMonkey();
   }
 
   pulseMonkeyBarrel() {
@@ -296,54 +455,35 @@ export default class Game extends Phaser.Scene {
     });
   }
 
-  onKickCycle() {
-    if (this.monkeyDestroyed || !this.monkey || !this.monkey.active) {
-      return;
-    }
-
-    this.cameras.main?.shake(80, 0.006);
-    this.cameras.main?.flash(40, 255, 240, 220, true);
-    this.spawnKickBloodSplat();
-    this.pulseMonkeyBarrel();
-    this.hitStop();
-
-    const isDead = this.monkey.damage({ damagePoints: KICK_DAMAGE_PER_CYCLE });
-    this.refreshHpText();
-
-    if (isDead) {
-      this.killMonkey();
-      return;
-    }
-
-    this.kickFrameRate += KICK_FRAMERATE_INCREMENT;
-    if (this.envy?.anims) {
-      this.envy.anims.timeScale = this.kickFrameRate / KICK_INITIAL_FRAMERATE;
-    }
-  }
-
   killMonkey() {
     if (this.monkeyDestroyed) {
       return;
     }
     this.monkeyDestroyed = true;
+    this.state = STATE_DONE;
 
-    this.envy.off(Phaser.Animations.Events.ANIMATION_REPEAT, this.onKickCycle, this);
-    this.envy.stop();
-    this.envy.setFrame('atlas_s0');
+    if (this.kickOverlap) {
+      this.physics.world.removeCollider(this.kickOverlap);
+      this.kickOverlap = null;
+    }
+
+    this.envy.off(`animationcomplete-${ENVY_KICK_ANIM}`, this.onKickAnimComplete, this);
+    this.envy.anims.stop();
+    this.envy.setTexture(ENVY_IDLE_KEY, 'atlas_s0');
+    this.envy.y = this.game.config.height;
 
     this.refreshHpText();
     document.dispatchEvent(new CustomEvent('enemy-defeated'));
   }
 
   cleanup() {
-    this.walkTween?.stop();
-    this.walkTween = null;
     if (this.kickOverlap) {
       this.physics.world?.removeCollider(this.kickOverlap);
       this.kickOverlap = null;
     }
     if (this.envy) {
-      this.envy.off(Phaser.Animations.Events.ANIMATION_REPEAT, this.onKickCycle, this);
+      this.envy.off(`animationcomplete-${ENVY_KICK_ANIM}`, this.onKickAnimComplete, this);
     }
+    this.barrelTween?.stop();
   }
 }
