@@ -31,7 +31,17 @@ const KICK_REACH_PX = 6;
 
 const MONKEY_BODY_WIDTH_FRACTION = 0.45;
 
-const FINISH_HIM_FREEZE_MS = 900;
+const FINISHER_EXTENDED_FRAME = 'atlas_s5';
+const FINISHER_ADVANCE_FRAME = 'atlas_s6';
+const FINISHER_DRAMATIC_HOLD_MS = 900;
+const FINISHER_ADVANCE_HOLD_MS = 350;
+
+const FINISH_HIM_TEXT = 'FINISH HIM';
+const FINISH_HIM_CHAR_DELAY_MS = 100;
+const FINISH_HIM_CHAR_DURATION_MS = 400;
+const FINISH_HIM_POST_TEXT_HOLD_MS = 600;
+const FINISH_HIM_CHAR_WIDTH = 16;
+const FONT_KEY = 'font-mkii';
 
 const MONKEY_START_HP = 99;
 
@@ -51,6 +61,8 @@ export default class Game extends Phaser.Scene {
     this.load.atlas(ENVY_IDLE_KEY, './assets/envy-idle.png', './assets/envy-idle.json');
     this.load.atlas(ENVY_WALK_KEY, './assets/envy-walk.png', './assets/envy-walk.json');
     this.load.atlas(ENVY_KICK_KEY, './assets/envy-kick.png', './assets/envy-kick.json');
+
+    this.load.image(FONT_KEY, 'https://assets.codepen.io/11817390/font-mkii.png');
 
     this.load.atlas('explosion', './assets/explosion.png', './assets/explosion.json');
     this.load.image('monkey', './assets/monkey.png');
@@ -75,6 +87,7 @@ export default class Game extends Phaser.Scene {
     this.kicksDelivered = 0;
     this.finishHimShown = false;
 
+    this.registerBitmapFont();
     this.createAnimations();
     this.createMonkey();
     this.createEnvy();
@@ -94,6 +107,19 @@ export default class Game extends Phaser.Scene {
 
     this.events.once('shutdown', () => this.cleanup());
     this.events.once('destroy', () => this.cleanup());
+  }
+
+  registerBitmapFont() {
+    if (this.cache.bitmapFont.exists(FONT_KEY)) {
+      return;
+    }
+    const fontConfig = {
+      image: FONT_KEY,
+      height: FINISH_HIM_CHAR_WIDTH,
+      width: FINISH_HIM_CHAR_WIDTH,
+      chars: Phaser.GameObjects.RetroFont.TEXT_SET3
+    };
+    this.cache.bitmapFont.add(FONT_KEY, Phaser.GameObjects.RetroFont.Parse(this, fontConfig));
   }
 
   createAnimations() {
@@ -368,37 +394,51 @@ export default class Game extends Phaser.Scene {
       this.monkey.body.setVelocity(0, 0);
     }
 
-    const text = this.add.text(
-      this.game.config.width / 2,
-      this.game.config.height / 2,
-      'FINISH HIM!',
-      {
-        fontFamily: '"Bangers", monospace',
-        fontSize: '36px',
-        color: '#ff2222',
-        stroke: '#220000',
-        strokeThickness: 5
-      }
-    ).setOrigin(0.5).setDepth(20);
-
-    this.tweens.add({
-      targets: text,
-      scale: { from: 0.4, to: 1.1 },
-      alpha: { from: 0, to: 1 },
-      duration: 220,
-      ease: 'Back.easeOut',
-      yoyo: false
-    });
-
     this.cameras.main?.flash(120, 255, 0, 0);
 
-    this.time.delayedCall(FINISH_HIM_FREEZE_MS, () => {
+    const chars = FINISH_HIM_TEXT.split('');
+    const cx = this.game.config.width / 2;
+    const cy = this.game.config.height / 2;
+    const totalWidth = chars.length * FINISH_HIM_CHAR_WIDTH;
+
+    this.finishHimChars = chars.map((char, index) => {
+      const x = cx - (totalWidth / 2) + (index * FINISH_HIM_CHAR_WIDTH) + (FINISH_HIM_CHAR_WIDTH / 2);
+      const charText = this.add.bitmapText(x, cy - 80, FONT_KEY, char)
+        .setOrigin(0.5)
+        .setAlpha(0)
+        .setTint(0xff2222)
+        .setDepth(20);
+
       this.tweens.add({
-        targets: text,
-        alpha: 0,
-        duration: 220,
-        onComplete: () => text.destroy()
+        targets: charText,
+        y: cy,
+        alpha: 1,
+        scale: { from: 1.5, to: 1 },
+        duration: FINISH_HIM_CHAR_DURATION_MS,
+        ease: 'Bounce.easeOut',
+        delay: index * FINISH_HIM_CHAR_DELAY_MS,
+        onComplete: () => {
+          this.cameras.main?.shake(80, 0.004);
+        }
       });
+
+      return charText;
+    });
+
+    const totalIntroMs = (chars.length - 1) * FINISH_HIM_CHAR_DELAY_MS + FINISH_HIM_CHAR_DURATION_MS;
+
+    this.time.delayedCall(totalIntroMs + FINISH_HIM_POST_TEXT_HOLD_MS, () => {
+      if (this.finishHimChars) {
+        this.tweens.add({
+          targets: this.finishHimChars,
+          alpha: 0,
+          duration: 220,
+          onComplete: () => {
+            this.finishHimChars?.forEach((c) => c.destroy());
+            this.finishHimChars = null;
+          }
+        });
+      }
       this.deliverFinisher();
     });
   }
@@ -410,7 +450,23 @@ export default class Game extends Phaser.Scene {
 
     this.state = STATE_KICKING;
     this.envy.anims.timeScale = (this.currentKickFrameRate() + 4) / KICK_INITIAL_FRAMERATE;
+
+    const onUpdate = (anim, frame) => {
+      if (!frame || frame.textureFrame !== FINISHER_EXTENDED_FRAME) {
+        return;
+      }
+      this.envy.off(Phaser.Animations.Events.ANIMATION_UPDATE, onUpdate);
+      this.onFinisherImpact();
+    };
+    this.envy.on(Phaser.Animations.Events.ANIMATION_UPDATE, onUpdate);
+
     this.envy.play(ENVY_KICK_ANIM);
+  }
+
+  onFinisherImpact() {
+    if (this.monkeyDestroyed) {
+      return;
+    }
 
     this.cameras.main?.shake(220, 0.018);
     this.cameras.main?.flash(120, 255, 240, 220, true);
@@ -419,10 +475,29 @@ export default class Game extends Phaser.Scene {
     this.pulseMonkeyBarrel();
     this.launchMonkey();
 
-    this.monkey.damage({ damagePoints: this.monkey.health });
+    if (this.monkey?.active) {
+      this.monkey.damage({ damagePoints: this.monkey.health });
+    }
     this.refreshHpText();
-
     this.killMonkey();
+
+    this.envy.anims.pause();
+
+    this.time.delayedCall(FINISHER_DRAMATIC_HOLD_MS, () => {
+      if (!this.envy?.active) {
+        return;
+      }
+      this.envy.setFrame(FINISHER_ADVANCE_FRAME);
+
+      this.time.delayedCall(FINISHER_ADVANCE_HOLD_MS, () => {
+        if (!this.envy?.active) {
+          return;
+        }
+        this.envy.anims.stop();
+        this.envy.anims.timeScale = 1;
+        this.envy.play(ENVY_IDLE_ANIM);
+      });
+    });
   }
 
   pulseMonkeyBarrel() {
@@ -548,9 +623,6 @@ export default class Game extends Phaser.Scene {
     }
 
     this.envy.off(`animationcomplete-${ENVY_KICK_ANIM}`, this.onKickAnimComplete, this);
-    this.envy.anims.stop();
-    this.envy.setTexture(ENVY_IDLE_KEY, 'atlas_s0');
-    this.envy.y = this.game.config.height;
 
     this.refreshHpText();
     document.dispatchEvent(new CustomEvent('enemy-defeated'));
