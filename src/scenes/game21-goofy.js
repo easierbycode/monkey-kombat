@@ -9,18 +9,35 @@ const BLOCK_PULSE_ANIM = 'mario-block-pulse';
 
 const GLOBE_SCALE = 0.45;
 const GOOFY_SCALE = 0.6;
-const TILE_SCALE = 0.4;
 
 const ANGULAR_SPEED_RAD_PER_SEC = 1.1;
-const GLOBE_ROTATION_FACTOR = 0.18;
+const GLOBE_ROTATION_FACTOR = 0.25;
 
 const CAMERA_ZOOM = 2.5;
 
 const MESSAGE = "HAPPY MOTHER'S DAY";
 const MESSAGE_ARC_DEG = 240;
 
-const FONT_KEY = 'font-mkii';
-const FONT_CHAR_SIZE = 16;
+const LETTER_CELL_SIZE = 4;
+const LETTER_GRID_W = 3;
+const LETTER_GRID_H = 5;
+const BRICK_SOURCE_PX = 16;
+const LETTER_RADIUS_OFFSET = 38;
+
+const LETTER_PATTERNS = {
+  'H': ['X.X', 'X.X', 'XXX', 'X.X', 'X.X'],
+  'A': ['.X.', 'X.X', 'XXX', 'X.X', 'X.X'],
+  'P': ['XX.', 'X.X', 'XX.', 'X..', 'X..'],
+  'Y': ['X.X', 'X.X', '.X.', '.X.', '.X.'],
+  'M': ['X.X', 'XXX', 'XXX', 'X.X', 'X.X'],
+  'O': ['XXX', 'X.X', 'X.X', 'X.X', 'XXX'],
+  'T': ['XXX', '.X.', '.X.', '.X.', '.X.'],
+  'E': ['XXX', 'X..', 'XX.', 'X..', 'XXX'],
+  'R': ['XX.', 'X.X', 'XX.', 'X.X', 'X.X'],
+  'S': ['.XX', 'X..', '.X.', '..X', 'XX.'],
+  'D': ['XX.', 'X.X', 'X.X', 'X.X', 'XX.'],
+  "'": ['.X.', '.X.', '...', '...', '...']
+};
 
 export default class Game21Goofy extends Phaser.Scene {
   constructor() {
@@ -33,7 +50,6 @@ export default class Game21Goofy extends Phaser.Scene {
     this.load.atlas(BRICK_KEY, './assets/mario-brick.png', './assets/mario-brick.json');
     this.load.atlas(BRICK_PARTICLE_KEY, './assets/mario-brick-particle.png', './assets/mario-brick-particle.json');
     this.load.atlas(BLOCK_KEY, './assets/mario-block.png', './assets/mario-block.json');
-    this.load.image(FONT_KEY, 'https://assets.codepen.io/11817390/font-mkii.png');
   }
 
   create() {
@@ -41,8 +57,6 @@ export default class Game21Goofy extends Phaser.Scene {
     const h = this.game.config.height;
 
     this.cameras.main.setBackgroundColor('#1a2238');
-
-    this.registerBitmapFont();
 
     this.globe = this.physics.add.sprite(w / 2, h / 2, GLOBE_KEY, 'atlas_s0');
     this.globe.setScale(GLOBE_SCALE);
@@ -55,7 +69,6 @@ export default class Game21Goofy extends Phaser.Scene {
     this.globe.body.setAllowGravity(false);
 
     this.createAnimations();
-    this.createMessageArc();
 
     this.goofy = this.add.sprite(0, 0, GOOFY_KEY, 'atlas_s0');
     this.goofy.setOrigin(0.5, 1);
@@ -71,21 +84,11 @@ export default class Game21Goofy extends Phaser.Scene {
 
     this.positionGoofy();
 
-    this.cameras.main.setZoom(CAMERA_ZOOM);
-    this.cameras.main.startFollow(this.goofy, true, 0.08, 0.08);
-  }
+    this.createMessageArc();
 
-  registerBitmapFont() {
-    if (this.cache.bitmapFont.exists(FONT_KEY)) {
-      return;
-    }
-    const fontConfig = {
-      image: FONT_KEY,
-      height: FONT_CHAR_SIZE,
-      width: FONT_CHAR_SIZE,
-      chars: Phaser.GameObjects.RetroFont.TEXT_SET3
-    };
-    this.cache.bitmapFont.add(FONT_KEY, Phaser.GameObjects.RetroFont.Parse(this, fontConfig));
+    this.cameras.main.setZoom(CAMERA_ZOOM);
+    this.cameras.main.startFollow(this.goofy, true, 0.12, 0.12);
+    this.cameras.main.centerOn(this.goofy.x, this.goofy.y);
   }
 
   createAnimations() {
@@ -118,8 +121,7 @@ export default class Game21Goofy extends Phaser.Scene {
   createMessageArc() {
     const cx = this.globe.x;
     const cy = this.globe.y;
-    const tileRadius = this.globeRadius + 22;
-    const textRadius = this.globeRadius + 32;
+    const letterRadius = this.globeRadius + LETTER_RADIUS_OFFSET;
 
     const chars = MESSAGE.split('');
     const stepDeg = MESSAGE_ARC_DEG / (chars.length - 1);
@@ -128,32 +130,49 @@ export default class Game21Goofy extends Phaser.Scene {
     chars.forEach((char, i) => {
       const deg = startDeg + i * stepDeg;
       const rad = Phaser.Math.DegToRad(deg);
-      const tileX = cx + Math.cos(rad) * tileRadius;
-      const tileY = cy + Math.sin(rad) * tileRadius;
-      const textX = cx + Math.cos(rad) * textRadius;
-      const textY = cy + Math.sin(rad) * textRadius;
+      const x = cx + Math.cos(rad) * letterRadius;
+      const y = cy + Math.sin(rad) * letterRadius;
       const upright = rad + Math.PI / 2;
 
-      const isBlank = char === ' ';
-      const tileKey = isBlank ? BLOCK_KEY : BRICK_KEY;
-      const tile = this.add.image(tileX, tileY, tileKey, 'atlas_s0');
-      tile.setScale(TILE_SCALE);
-      tile.setRotation(upright);
-      tile.setDepth(2);
+      const container = this.add.container(x, y);
+      container.setDepth(2);
+      container.setRotation(upright);
 
-      if (isBlank) {
-        tile.play(BLOCK_PULSE_ANIM);
-      }
-
-      if (!isBlank) {
-        const text = this.add.bitmapText(textX, textY, FONT_KEY, char)
-          .setOrigin(0.5)
-          .setDepth(4)
-          .setTint(0xffe066);
-        text.setScale(0.5);
-        text.setRotation(upright);
-      }
+      this.buildLetter(container, char);
     });
+  }
+
+  buildLetter(container, char) {
+    if (char === ' ') {
+      const block = this.add.sprite(0, 0, BLOCK_KEY, 'atlas_s0');
+      block.setScale(LETTER_CELL_SIZE / BRICK_SOURCE_PX * 1.5);
+      block.play(BLOCK_PULSE_ANIM);
+      container.add(block);
+      return;
+    }
+
+    const pattern = LETTER_PATTERNS[char];
+    if (!pattern) {
+      return;
+    }
+
+    const brickScale = LETTER_CELL_SIZE / BRICK_SOURCE_PX;
+    const colCenter = (LETTER_GRID_W - 1) / 2;
+    const rowCenter = (LETTER_GRID_H - 1) / 2;
+
+    for (let row = 0; row < pattern.length; row++) {
+      const line = pattern[row];
+      for (let col = 0; col < line.length; col++) {
+        if (line[col] !== 'X') {
+          continue;
+        }
+        const localX = (col - colCenter) * LETTER_CELL_SIZE;
+        const localY = (row - rowCenter) * LETTER_CELL_SIZE;
+        const brick = this.add.image(localX, localY, BRICK_KEY, 'atlas_s0');
+        brick.setScale(brickScale);
+        container.add(brick);
+      }
+    }
   }
 
   update(_, deltaMs) {
