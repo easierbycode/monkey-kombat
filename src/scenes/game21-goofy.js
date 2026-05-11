@@ -41,7 +41,7 @@ const LETTER_PATTERNS = {
   'A': ['.X.', 'X.X', 'XXX', 'X.X', 'X.X'],
   'P': ['XX.', 'X.X', 'XX.', 'X..', 'X..'],
   'Y': ['X.X', 'X.X', '.X.', '.X.', '.X.'],
-  'M': ['X.X', 'XXX', 'XXX', 'X.X', 'X.X'],
+  'M': ['X.X', 'X.X', 'X.X', 'X.X', 'X.X'],
   'O': ['XXX', 'X.X', 'X.X', 'X.X', 'XXX'],
   'T': ['XXX', '.X.', '.X.', '.X.', '.X.'],
   'E': ['XXX', 'X..', 'XX.', 'X..', 'XXX'],
@@ -213,6 +213,41 @@ export default class Game21Goofy extends Phaser.Scene {
           consumed: false
         });
       }
+    }
+
+    if (char === 'M') {
+      this.addMDiagonals(container, containerX, containerY, cosR, sinR);
+    }
+  }
+
+  addMDiagonals(container, containerX, containerY, cosR, sinR) {
+    const particleScale = LETTER_CELL_SIZE / 8;
+    const diagonals = [
+      { localX: -2.2, localY: -5.5, flipX: false },
+      { localX: -1.0, localY: -2.5, flipX: false },
+      { localX:  0.0, localY: -0.5, flipX: false },
+      { localX:  1.0, localY: -2.5, flipX: true  },
+      { localX:  2.2, localY: -5.5, flipX: true  }
+    ];
+
+    for (const d of diagonals) {
+      const p = this.add.image(d.localX, d.localY, BRICK_PARTICLE_KEY, 'atlas_s0');
+      p.setScale(particleScale);
+      if (d.flipX) {
+        p.setFlipX(true);
+      }
+      container.add(p);
+
+      const worldX = containerX + d.localX * cosR - d.localY * sinR;
+      const worldY = containerY + d.localX * sinR + d.localY * cosR;
+      this.collidables.push({
+        type: 'brick',
+        worldX,
+        worldY,
+        sprite: p,
+        container,
+        consumed: false
+      });
     }
   }
 
