@@ -32,6 +32,7 @@ const GOOFY_HEIGHT_PX = 24;
 const JUMP_DURATION_SEC = 0.75;
 const JUMP_PEAK_HEIGHT = 30;
 const COLLISION_RADIUS_PX = 6;
+const BLOCK_HIT_COOLDOWN_MS = 220;
 
 const STATE_WALKING = 'walking';
 const STATE_JUMPING = 'jumping';
@@ -324,16 +325,23 @@ export default class Game21Goofy extends Phaser.Scene {
     const probeX = cx + outwardX * collisionR;
     const probeY = cy + outwardY * collisionR;
     const thresholdSq = COLLISION_RADIUS_PX * COLLISION_RADIUS_PX;
+    const now = this.time.now;
 
     for (const c of this.collidables) {
-      if (c.consumed) continue;
+      if (c.type === 'block') {
+        if (c.cooldownUntil && now < c.cooldownUntil) continue;
+      } else if (c.consumed) {
+        continue;
+      }
+
       const dx = c.worldX - probeX;
       const dy = c.worldY - probeY;
       if (dx * dx + dy * dy < thresholdSq) {
-        c.consumed = true;
         if (c.type === 'brick') {
+          c.consumed = true;
           this.explodeBrick(c);
         } else if (c.type === 'block') {
+          c.cooldownUntil = now + BLOCK_HIT_COOLDOWN_MS;
           this.popBlock(c);
         }
       }
@@ -378,11 +386,13 @@ export default class Game21Goofy extends Phaser.Scene {
       yoyo: true
     });
 
+    const upright = radialAngle + Math.PI / 2;
     const N = 4;
     for (let i = 0; i < N; i++) {
       const coin = this.add.sprite(c.worldX, c.worldY, COIN_KEY, 'atlas_s0');
       coin.setScale(0.6);
       coin.setDepth(6);
+      coin.setRotation(upright);
       coin.play(COIN_SPIN_ANIM);
 
       const spread = (i - (N - 1) / 2) * 0.35;
