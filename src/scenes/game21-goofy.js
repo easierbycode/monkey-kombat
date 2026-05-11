@@ -41,7 +41,6 @@ const LETTER_PATTERNS = {
   'A': ['.X.', 'X.X', 'XXX', 'X.X', 'X.X'],
   'P': ['XX.', 'X.X', 'XX.', 'X..', 'X..'],
   'Y': ['X.X', 'X.X', '.X.', '.X.', '.X.'],
-  'M': ['X.X', 'XXX', 'XXX', 'X.X', 'X.X'],
   'O': ['XXX', 'X.X', 'X.X', 'X.X', 'XXX'],
   'T': ['XXX', '.X.', '.X.', '.X.', '.X.'],
   'E': ['XXX', 'X..', 'XX.', 'X..', 'XXX'],
@@ -50,6 +49,14 @@ const LETTER_PATTERNS = {
   'D': ['XX.', 'X.X', 'X.X', 'X.X', 'XX.'],
   "'": ['.X.', '.X.', '...', '...', '...']
 };
+
+const M_DIAGONAL_PARTICLES = [
+  { x: -3,   y: -8   },
+  { x: -2,   y: -5.5 },
+  { x: -1.2, y: -3   },
+  { x: -0.5, y: -0.8 }
+];
+const M_V_TIP = { x: 0, y: 0.4 };
 
 export default class Game21Goofy extends Phaser.Scene {
   constructor() {
@@ -179,6 +186,11 @@ export default class Game21Goofy extends Phaser.Scene {
       return;
     }
 
+    if (char === 'M') {
+      this.buildLetterM(container, containerX, containerY, rotation);
+      return;
+    }
+
     const pattern = LETTER_PATTERNS[char];
     if (!pattern) {
       return;
@@ -214,6 +226,51 @@ export default class Game21Goofy extends Phaser.Scene {
         });
       }
     }
+  }
+
+  buildLetterM(container, containerX, containerY, rotation) {
+    const brickScale = LETTER_CELL_SIZE / BRICK_SOURCE_PX;
+    const particleScale = brickScale;
+    const colCenter = (LETTER_GRID_W - 1) / 2;
+    const rowCenter = (LETTER_GRID_H - 1) / 2;
+    const cosR = Math.cos(rotation);
+    const sinR = Math.sin(rotation);
+
+    const place = (localX, localY, key, scale, flipX) => {
+      const sprite = this.add.image(localX, localY, key, 'atlas_s0');
+      sprite.setScale(scale);
+      if (flipX) {
+        sprite.setFlipX(true);
+      }
+      container.add(sprite);
+
+      const worldX = containerX + localX * cosR - localY * sinR;
+      const worldY = containerY + localX * sinR + localY * cosR;
+      this.collidables.push({
+        type: 'brick',
+        worldX,
+        worldY,
+        sprite,
+        container,
+        consumed: false
+      });
+    };
+
+    for (let row = 0; row < LETTER_GRID_H; row++) {
+      for (const col of [0, 2]) {
+        const localX = (col - colCenter) * LETTER_CELL_SIZE;
+        const localY = (row - rowCenter) * LETTER_CELL_SIZE;
+        place(localX, localY, BRICK_KEY, brickScale, false);
+      }
+    }
+
+    for (const p of M_DIAGONAL_PARTICLES) {
+      place(p.x, p.y, BRICK_PARTICLE_KEY, particleScale, false);
+      place(-p.x, p.y, BRICK_PARTICLE_KEY, particleScale, true);
+    }
+
+    place(M_V_TIP.x, M_V_TIP.y, BRICK_PARTICLE_KEY, particleScale, false);
+    place(M_V_TIP.x, M_V_TIP.y, BRICK_PARTICLE_KEY, particleScale, true);
   }
 
   startJump() {
