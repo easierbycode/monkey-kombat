@@ -226,6 +226,7 @@ export default class Game21Goofy extends Phaser.Scene {
         });
       }
     }
+
   }
 
   buildLetterM(container, containerX, containerY, rotation) {
