@@ -288,6 +288,11 @@ export default class Game21Goofy extends Phaser.Scene {
     this.state = STATE_WALKING;
     this.jumpRadius = this.globeRadius;
     this.direction *= -1;
+    for (const c of this.collidables) {
+      if (c.type === 'block') {
+        c.hitThisJump = false;
+      }
+    }
     this.goofy.setTexture(GOOFY_KEY, 'atlas_s0');
     this.goofy.play(GOOFY_WALK_ANIM);
   }
@@ -327,14 +332,16 @@ export default class Game21Goofy extends Phaser.Scene {
     const thresholdSq = COLLISION_RADIUS_PX * COLLISION_RADIUS_PX;
 
     for (const c of this.collidables) {
-      if (c.consumed) continue;
+      if (c.type === 'brick' && c.consumed) continue;
+      if (c.type === 'block' && c.hitThisJump) continue;
       const dx = c.worldX - probeX;
       const dy = c.worldY - probeY;
       if (dx * dx + dy * dy < thresholdSq) {
-        c.consumed = true;
         if (c.type === 'brick') {
+          c.consumed = true;
           this.explodeBrick(c);
         } else if (c.type === 'block') {
+          c.hitThisJump = true;
           this.popBlock(c);
         }
       }
