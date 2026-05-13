@@ -31,7 +31,7 @@ const KICK_REACH_PX = 6;
 
 const MONKEY_BODY_WIDTH_FRACTION = 0.45;
 
-const KICK_FINAL_FRAME = 'atlas_s7';
+const KICK_LAUNCH_FRAME = 'atlas_s5';
 
 const HAPTIC_KICK_MS = 40;
 const HAPTIC_FINISHER_PATTERN = [80, 40, 160];
@@ -347,7 +347,7 @@ export default class Game extends Phaser.Scene {
     this.envy.anims.timeScale = this.currentKickFrameRate() / KICK_INITIAL_FRAMERATE;
 
     const onUpdate = (anim, frame) => {
-      if (!frame || frame.textureFrame !== KICK_FINAL_FRAME) {
+      if (!frame || frame.textureFrame !== KICK_LAUNCH_FRAME) {
         return;
       }
       this.envy.off(Phaser.Animations.Events.ANIMATION_UPDATE, onUpdate);
