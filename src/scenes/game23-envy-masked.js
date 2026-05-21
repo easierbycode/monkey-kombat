@@ -8,7 +8,16 @@ const ENVY_IDLE_ANIM = 'envy-idle-blonde-loop';
 const ENVY_WALK_ANIM = 'envy-walk-blonde-loop';
 const ENVY_KICK_ANIM = 'envy-kick-blonde-once';
 
-const C_MASK_KEY = 'c-mask';
+const FELICIA_KEY = 'felicia-intro';
+const FELICIA_INTRO_ANIM = 'felicia-intro-cycle';
+const FELICIA_MORPH_ANIM = 'felicia-morph';
+const FELICIA_IDLE_ANIM = 'felicia-idle-loop';
+
+const FELICIA_INTRO_FPS = 24;
+const FELICIA_INTRO_CYCLES = 3;
+const FELICIA_MORPH_FPS = 12;
+const FELICIA_IDLE_FPS = 8;
+const FELICIA_IDLE_REPEAT_DELAY_MS = 600;
 
 const IDLE_DURATION_MS = 3500;
 const APPROACH_SPEED_PX_PER_SEC = 60;
@@ -70,7 +79,7 @@ const BLONDE_COMPLEMENT_HUE_RANGE = 50;
 
 const MASK_FACE_OFFSET_Y_FRACTION = 0.62;
 const MASK_FACE_OFFSET_X_FRACTION = 0.10;
-const MASK_SCALE_FACTOR = 0.22;
+const MASK_SCALE_FACTOR = 0.55;
 
 export default class Game extends Phaser.Scene {
   constructor() {
@@ -82,7 +91,7 @@ export default class Game extends Phaser.Scene {
     this.load.atlas(ENVY_WALK_KEY, './assets/envy-walk.png', './assets/envy-walk.json');
     this.load.atlas(ENVY_KICK_KEY, './assets/envy-kick.png', './assets/envy-kick.json');
 
-    this.load.image(C_MASK_KEY, './assets/c-mask.png');
+    this.load.atlas(FELICIA_KEY, './assets/felicia-intro.png', './assets/felicia-intro.json');
     this.load.image(FONT_KEY, 'https://assets.codepen.io/11817390/font-mkii.png');
 
     this.load.atlas('explosion', './assets/explosion.png', './assets/explosion.json');
@@ -323,6 +332,40 @@ export default class Game extends Phaser.Scene {
       frameRate: KICK_INITIAL_FRAMERATE,
       repeat: 0
     });
+
+    ensureAnim({
+      key: FELICIA_INTRO_ANIM,
+      frames: this.anims.generateFrameNames(FELICIA_KEY, {
+        prefix: 'atlas_s',
+        start: 0,
+        end: 2
+      }),
+      frameRate: FELICIA_INTRO_FPS,
+      repeat: FELICIA_INTRO_CYCLES - 1
+    });
+
+    ensureAnim({
+      key: FELICIA_MORPH_ANIM,
+      frames: this.anims.generateFrameNames(FELICIA_KEY, {
+        prefix: 'atlas_s',
+        start: 3,
+        end: 9
+      }),
+      frameRate: FELICIA_MORPH_FPS,
+      repeat: 0
+    });
+
+    ensureAnim({
+      key: FELICIA_IDLE_ANIM,
+      frames: this.anims.generateFrameNames(FELICIA_KEY, {
+        prefix: 'atlas_s',
+        start: 10,
+        end: 14
+      }),
+      frameRate: FELICIA_IDLE_FPS,
+      repeat: -1,
+      repeatDelay: FELICIA_IDLE_REPEAT_DELAY_MS
+    });
   }
 
   createMonkey() {
@@ -380,10 +423,12 @@ export default class Game extends Phaser.Scene {
   }
 
   createEnvyMask() {
-    this.envyMask = this.add.image(this.envy.x, this.envy.y, C_MASK_KEY);
+    this.envyMask = this.add.sprite(this.envy.x, this.envy.y, FELICIA_KEY, 'atlas_s0');
     this.envyMask.setOrigin(0.5, 0.5);
     this.envyMask.setDepth(this.envy.depth + 1);
     this.envyMask.setScale(this.envy.scale * MASK_SCALE_FACTOR);
+    this.envyMask.play(FELICIA_INTRO_ANIM);
+    this.envyMask.chain([FELICIA_MORPH_ANIM, FELICIA_IDLE_ANIM]);
     this.syncEnvyMask();
   }
 

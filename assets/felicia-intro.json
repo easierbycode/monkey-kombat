@@ -1,0 +1,117 @@
+{
+  "frames": {
+    "atlas_s0": {
+      "frame": { "x": 0, "y": 0, "w": 90, "h": 136 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 13, "y": 32, "w": 64, "h": 71 },
+      "sourceSize": { "w": 90, "h": 136 }
+    },
+    "atlas_s1": {
+      "frame": { "x": 90, "y": 0, "w": 90, "h": 136 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 4, "w": 90, "h": 128 },
+      "sourceSize": { "w": 90, "h": 136 }
+    },
+    "atlas_s2": {
+      "frame": { "x": 180, "y": 0, "w": 90, "h": 136 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 1, "y": 0, "w": 88, "h": 136 },
+      "sourceSize": { "w": 90, "h": 136 }
+    },
+    "atlas_s3": {
+      "frame": { "x": 270, "y": 0, "w": 90, "h": 136 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 28, "y": 52, "w": 34, "h": 31 },
+      "sourceSize": { "w": 90, "h": 136 }
+    },
+    "atlas_s4": {
+      "frame": { "x": 360, "y": 0, "w": 90, "h": 136 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 29, "y": 52, "w": 31, "h": 31 },
+      "sourceSize": { "w": 90, "h": 136 }
+    },
+    "atlas_s5": {
+      "frame": { "x": 450, "y": 0, "w": 90, "h": 136 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 30, "y": 52, "w": 29, "h": 32 },
+      "sourceSize": { "w": 90, "h": 136 }
+    },
+    "atlas_s6": {
+      "frame": { "x": 540, "y": 0, "w": 90, "h": 136 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 29, "y": 52, "w": 31, "h": 31 },
+      "sourceSize": { "w": 90, "h": 136 }
+    },
+    "atlas_s7": {
+      "frame": { "x": 630, "y": 0, "w": 90, "h": 136 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 27, "y": 52, "w": 35, "h": 31 },
+      "sourceSize": { "w": 90, "h": 136 }
+    },
+    "atlas_s8": {
+      "frame": { "x": 720, "y": 0, "w": 90, "h": 136 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 28, "y": 52, "w": 34, "h": 32 },
+      "sourceSize": { "w": 90, "h": 136 }
+    },
+    "atlas_s9": {
+      "frame": { "x": 810, "y": 0, "w": 90, "h": 136 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 27, "y": 52, "w": 35, "h": 31 },
+      "sourceSize": { "w": 90, "h": 136 }
+    },
+    "atlas_s10": {
+      "frame": { "x": 900, "y": 0, "w": 90, "h": 136 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 27, "y": 52, "w": 35, "h": 31 },
+      "sourceSize": { "w": 90, "h": 136 }
+    },
+    "atlas_s11": {
+      "frame": { "x": 990, "y": 0, "w": 90, "h": 136 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 28, "y": 53, "w": 34, "h": 29 },
+      "sourceSize": { "w": 90, "h": 136 }
+    },
+    "atlas_s12": {
+      "frame": { "x": 1080, "y": 0, "w": 90, "h": 136 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 28, "y": 54, "w": 34, "h": 28 },
+      "sourceSize": { "w": 90, "h": 136 }
+    },
+    "atlas_s13": {
+      "frame": { "x": 1170, "y": 0, "w": 90, "h": 136 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 32, "y": 54, "w": 26, "h": 28 },
+      "sourceSize": { "w": 90, "h": 136 }
+    },
+    "atlas_s14": {
+      "frame": { "x": 1260, "y": 0, "w": 90, "h": 136 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 29, "y": 56, "w": 32, "h": 24 },
+      "sourceSize": { "w": 90, "h": 136 }
+    }
+  },
+  "meta": {
+    "app": "Evil Invaders Atlas Builder",
+    "format": "RGBA8888",
+    "image": "felicia-intro.png",
+    "scale": "1",
+    "size": { "w": 2048, "h": 136 },
+    "version": "1.0"
+  }
+}
