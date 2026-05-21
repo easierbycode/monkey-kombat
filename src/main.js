@@ -22,6 +22,7 @@ import MsPacMan from './scenes/game19-ms-pacman.js';
 import Game20 from './scenes/game20-envy.js';
 import Game21 from './scenes/game21-goofy.js';
 import Game22 from './scenes/game22-calculator.js';
+import Game23 from './scenes/game23-envy-masked.js';
 
 window.Phaser = Phaser;
 
@@ -49,6 +50,7 @@ const scenes = [
   Game20,
   Game21,
   Game22,
+  Game23,
 ];
 
 let gameInstance = null;
