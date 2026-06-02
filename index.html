@@ -434,6 +434,24 @@
   <script src="https://assets.codepen.io/11817390/TweenMax.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/phaser@4.1.0/dist/phaser.min.js" crossorigin="anonymous"
     referrerpolicy="no-referrer"></script>
+  <script>
+  // Launcher OSD bridge: once this game has keyboard focus, the parent launcher
+  // stops receiving keydowns, so its own ` / ~ / Esc handler never fires.
+  // Forward those keys up so the launcher can toggle the in-game Guide/OSD.
+  // Capture phase + stopImmediatePropagation so the game itself doesn't also act.
+  // No-op when run standalone (not embedded).
+  (function () {
+    if (window.parent === window) return; // standalone — leave keys to the game
+    window.addEventListener("keydown", function (e) {
+      if (e.code === "Backquote" || e.key === "`" || e.key === "~" ||
+          e.keyCode === 192 || e.key === "Escape") {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        try { window.parent.postMessage({ type: "tg16-toggle-controls" }, "*"); } catch (_) {}
+      }
+    }, true);
+  })();
+</script>
 </head>
 
 <body>
