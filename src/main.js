@@ -23,6 +23,7 @@ import Game20 from './scenes/game20-envy.js';
 import Game21 from './scenes/game21-goofy.js';
 import Game22 from './scenes/game22-calculator.js';
 import Game23 from './scenes/game23-envy-masked.js';
+import Game24Ryu from './scenes/game22-ryu.js';
 
 window.Phaser = Phaser;
 
@@ -51,6 +52,7 @@ const scenes = [
   Game21,
   Game22,
   Game23,
+  Game24Ryu,
 ];
 
 let gameInstance = null;
