@@ -5,275 +5,367 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Monkey Kombat Character Select</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+  <link rel="preload" as="image" href="assets/font-mkii.png">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
-
     html,
     body {
       height: 100%;
     }
 
     body {
-      background: url('menu-bg.png') center center / cover no-repeat #2a2a2a;
-      color: #fff;
-      font-family: 'Orbitron', monospace;
       margin: 0;
       padding: 0;
-      height: 100vh;
       overflow: hidden;
-      transition: background 0.4s ease;
+      background: url('menu-bg.png') center center / cover no-repeat #2a2a2a;
+      font-family: 'Orbitron', monospace;
+      color: #fff;
     }
 
-    h1 {
-      text-align: center;
-      font-size: 3.5em;
-      margin: 20px 0;
-      font-weight: 900;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-
-      /* MK Gradient Style */
-      background: linear-gradient(180deg, #fff 0%, #ffcc00 20%, #ff6600 50%, #cc0000 100%);
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
-      color: transparent;
-
-      /* Outline/Stroke simulation */
-      filter: drop-shadow(2px 2px 0px #000) drop-shadow(-1px -1px 0 #000);
-      position: relative;
+    a {
+      color: #ffd700;
     }
 
-    .select-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      position: relative;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-      scroll-behavior: smooth;
-      scrollbar-width: none; /* Firefox */
-    }
-
-    .select-container::-webkit-scrollbar {
-      display: none; /* Chrome/Safari */
-    }
-
-    .character-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 5px;
-      max-width: 720px;
-      margin: 0 auto;
-      padding: 5px;
-      background:
-        radial-gradient(ellipse at 25% 15%, rgba(130,140,110,0.4), transparent 50%),
-        radial-gradient(ellipse at 75% 85%, rgba(100,115,90,0.3), transparent 50%),
-        radial-gradient(ellipse at 50% 50%, rgba(110,125,100,0.3), transparent 60%),
-        linear-gradient(160deg, #5e6e55, #4a5a42, #3d4d36, #526249);
-      border: 4px solid #222;
-      border-radius: 0;
-      box-shadow: inset 0 0 40px rgba(0,0,0,0.3);
-    }
-
-    .character-tile {
-      position: relative;
-      aspect-ratio: 4/3;
-      background: #1a1a1a;
-      border: 3px solid #333;
-      cursor: pointer;
-      transition: all 0.15s ease;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      text-decoration: none;
-      border-radius: 0;
-      box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.6);
-      color: inherit;
-    }
-
-    .character-tile:hover,
-    .character-tile.selected {
-      transform: scale(1.05);
-      z-index: 10;
-      box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
-      border-color: #888;
-    }
-
-    .character-tile.selected {
-      animation: borderFlash 0.1s infinite;
-      border-width: 3px;
-      border-style: solid;
+    a:hover {
+      color: #ffe763;
     }
 
     @keyframes borderFlash {
-      0% {
-        border-color: #00ff00;
-      }
-
-      50% {
-        border-color: #ffff00;
-      }
-
-      100% {
-        border-color: #00ff00;
-      }
+      0% { border-color: #00ff00; }
+      50% { border-color: #ffff00; }
+      100% { border-color: #00ff00; }
     }
 
-    .random-tile {
+    @keyframes pulseGlow {
+      0% { opacity: 0.7; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.04); }
+      100% { opacity: 0.7; transform: scale(1); }
+    }
+
+    @keyframes rsFrame0 {
+      0% { opacity: 1; }
+      50% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+
+    @keyframes rsFrame1 {
+      0% { opacity: 0; }
+      50% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    @keyframes mk2flash {
+      0% { box-shadow: 0 0 0 4px #ff0, 0 0 15px 4px #ff0; }
+      25% { box-shadow: 0 0 0 4px #f00, 0 0 15px 4px #f00; }
+      50% { box-shadow: 0 0 0 4px #0ff, 0 0 15px 4px #0ff; }
+      75% { box-shadow: 0 0 0 4px #0f0, 0 0 15px 4px #0f0; }
+      100% { box-shadow: 0 0 0 4px #ff0, 0 0 15px 4px #ff0; }
+    }
+
+    @keyframes mk2sel {
+      0% { box-shadow: 0 0 0 4px #fff, 0 0 20px 8px #ff0; }
+      50% { box-shadow: 0 0 0 6px #ff0, 0 0 30px 12px #f80; }
+      100% { box-shadow: 0 0 0 4px #fff, 0 0 20px 8px #ff0; }
+    }
+
+    /* MK bitmap font (assets/font-mkii.png): 36 glyphs A-Z 0-9, 16x16 cells.
+       Glyphs are sized in em so the container's font-size scales them. */
+    .mkf {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.12em;
+    }
+
+    .mkf-glyph {
+      width: 1em;
+      height: 1em;
+      flex: 0 0 auto;
+      background-image: url('assets/font-mkii.png');
+      background-repeat: no-repeat;
+      background-size: 36em 1em;
+      image-rendering: pixelated;
+    }
+
+    .mkf-space {
+      width: 0.4em;
+      flex: 0 0 auto;
+    }
+
+    .mkf-fb {
+      font-family: 'Orbitron', monospace;
+      font-weight: 900;
+      font-size: 0.85em;
+      line-height: 1;
+      color: #ffaa00;
+      text-shadow: 1px 1px 0 #000;
+    }
+
+    .select-screen {
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 8px 12px 2px 12px;
+    }
+
+    .rotate-btn {
+      background: rgba(17, 17, 17, 0.85);
+      border: 2px solid #ffd700;
+      color: #ffd700;
+      font-family: 'Orbitron', monospace;
+      font-weight: 700;
+      letter-spacing: 1px;
+      padding: 8px 14px;
+      min-height: 44px;
+      min-width: 64px;
+      cursor: pointer;
+      text-transform: uppercase;
+      font-size: clamp(10px, 1.7vmin, 14px);
+      flex: 0 0 auto;
+      transition: all 0.2s ease;
+    }
+
+    .rotate-btn:hover {
+      background: #ffd700;
+      color: #000;
+      box-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
+    }
+
+    .title-block {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      min-width: 0;
+    }
+
+    .title {
+      font-size: clamp(17px, 4.4vmin, 42px);
+      white-space: nowrap;
+      filter: drop-shadow(2px 2px 0px rgba(0, 0, 0, 0.85));
+    }
+
+    .dots {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      padding: 0;
+      appearance: none;
+      background: rgba(255, 255, 255, 0.18);
+      border: 1px solid rgba(0, 0, 0, 0.6);
+      cursor: pointer;
+    }
+
+    .dot.active {
+      background: #ffd700;
+      box-shadow: 0 0 8px rgba(255, 215, 0, 0.8);
+    }
+
+    .stage {
+      flex: 1 1 auto;
+      min-height: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      perspective-origin: 50% 50%;
+    }
+
+    .cube {
+      position: relative;
+      transform-style: preserve-3d;
+      will-change: transform;
+    }
+
+    .wall {
+      position: absolute;
+      inset: 0;
+      backface-visibility: hidden;
+      box-sizing: border-box;
+      display: grid;
+      gap: 5px;
+      padding: 5px;
+      border: 4px solid #222;
+      box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.3), 0 24px 60px rgba(0, 0, 0, 0.45);
       background:
-        radial-gradient(circle, rgba(60,70,55,0.8), rgba(30,35,28,0.9)),
+        radial-gradient(ellipse at 25% 15%, rgba(130, 140, 110, 0.4), transparent 50%),
+        radial-gradient(ellipse at 75% 85%, rgba(100, 115, 90, 0.3), transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(110, 125, 100, 0.3), transparent 60%),
+        linear-gradient(160deg, #5e6e55, #4a5a42, #3d4d36, #526249);
+    }
+
+    .wall-dim {
+      position: absolute;
+      inset: 0;
+      background: #000;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 20;
+      transition: opacity 0.5s ease;
+    }
+
+    .tile {
+      position: relative;
+      box-sizing: border-box;
+      background: #1a1a1a;
+      border: 3px solid #333;
+      box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      cursor: pointer;
+      min-width: 0;
+      min-height: 0;
+      touch-action: manipulation;
+      z-index: 1;
+      transition: border-color 0.15s ease, filter 0.25s ease, transform 0.15s ease;
+    }
+
+    .tile:hover {
+      transform: scale(1.05);
+      border-color: #888;
+      box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+      z-index: 10;
+    }
+
+    .tile.random {
+      background:
+        radial-gradient(circle, rgba(60, 70, 55, 0.8), rgba(30, 35, 28, 0.9)),
         linear-gradient(135deg, #3a4a35, #2a3a25);
       border-color: #444;
     }
 
-    .random-tile img {
-      image-rendering: pixelated;
-      max-width: 75% !important;
-      max-height: 75% !important;
-      filter: brightness(1.5) contrast(1.3) drop-shadow(0 0 8px rgba(255,215,0,0.4)) !important;
+    .tile.unknown {
+      background: #151515;
+      border-color: #2a2a2a;
     }
 
-    .random-tile .random-frame {
-      position: absolute;
-      animation: random-select-anim 0.4s steps(1) infinite;
+    .tile.cursor {
+      animation: borderFlash 0.1s infinite;
+      z-index: 10;
+      transform: scale(1.05);
     }
 
-    .random-tile .random-frame:nth-child(2) {
-      animation-delay: 0.2s;
+    .tile.roulette {
+      animation: mk2flash 0.15s linear infinite;
+      z-index: 10;
     }
 
-    .random-tile .random-frame:nth-child(1) {
-      animation: random-select-frame0 0.4s steps(1) infinite;
+    .tile.pulse {
+      animation: mk2sel 0.4s ease-in-out 3;
+      z-index: 10;
     }
 
-    .random-tile .random-frame:nth-child(2) {
-      animation: random-select-frame1 0.4s steps(1) infinite;
-    }
-
-    @keyframes random-select-frame0 {
-      0%   { opacity: 1; }
-      50%  { opacity: 0; }
-      100% { opacity: 1; }
-    }
-
-    @keyframes random-select-frame1 {
-      0%   { opacity: 0; }
-      50%  { opacity: 1; }
-      100% { opacity: 0; }
-    }
-
-    .random-tile:hover {
+    .tile.selected {
       border-color: #ffd700;
-      box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+      box-shadow: 0 0 12px rgba(255, 215, 0, 0.5), inset 0 0 15px rgba(0, 0, 0, 0.6);
     }
 
-    .random-tile:hover img {
-      filter: brightness(2) contrast(1.4) drop-shadow(0 0 12px rgba(255,215,0,0.7)) !important;
+    .tile.dimmed {
+      filter: brightness(0.35);
     }
 
-    .character-tile img {
+    .tile img.char {
       max-width: 75%;
       max-height: 75%;
       object-fit: contain;
       filter: brightness(1.1) contrast(1.2);
-      transition: filter 0.2s ease;
       pointer-events: none;
     }
 
-    .character-tile:hover img,
-    .character-tile.selected img {
-      filter: brightness(1.3) contrast(1.4) saturate(1.2);
-    }
-
-    .character-name {
+    .tile .nameplate {
       position: absolute;
       bottom: 0;
       left: 0;
       right: 0;
+      display: flex;
+      justify-content: center;
       background: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent);
-      color: #ffd700;
+      overflow: hidden;
+    }
+
+    .tile img.rs {
+      position: absolute;
+      inset: 0;
+      margin: auto;
+      max-width: 75%;
+      max-height: 75%;
+      image-rendering: pixelated;
+      filter: brightness(1.5) contrast(1.3) drop-shadow(0 0 8px rgba(255, 215, 0, 0.4));
+      pointer-events: none;
+    }
+
+    .tile img.rs0 {
+      animation: rsFrame0 0.4s steps(1) infinite;
+    }
+
+    .tile img.rs1 {
+      animation: rsFrame1 0.4s steps(1) infinite;
+    }
+
+    .tile .qmark {
+      font-weight: 900;
+      line-height: 1;
+      background: linear-gradient(180deg, #cdd8b8 0%, #8fa878 35%, #46583c 75%, #22301c 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: transparent;
+      filter: drop-shadow(0 2px 0 #000) drop-shadow(0 0 6px rgba(140, 170, 110, 0.35));
+      opacity: 0.85;
+    }
+
+    .footer {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px 8px 10px;
       text-align: center;
-      padding: 8px 2px;
-      font-size: 0.75em;
-      font-weight: 700;
+    }
+
+    .status {
+      font-size: clamp(11px, 2.2vmin, 18px);
+      animation: pulseGlow 2s infinite;
+      filter: drop-shadow(0 0 6px rgba(255, 170, 0, 0.7));
+      max-width: 96vw;
+      overflow: hidden;
+    }
+
+    .status.chosen {
+      filter: hue-rotate(95deg) drop-shadow(0 0 6px rgba(255, 170, 0, 0.7));
+    }
+
+    .hints {
+      color: rgba(255, 255, 255, 0.55);
+      font-size: clamp(8px, 1.5vmin, 12px);
       letter-spacing: 1px;
-      text-shadow: 0 0 3px #000;
-      transition: all 0.2s ease;
+      font-weight: 400;
     }
 
-    .choose {
-      color: #ffd700;
-      text-align: center;
-      font-size: 1.2em;
-      margin: 10px 0 20px 0;
-      text-shadow: 0 0 10px #ffd700;
-      animation: pulse 2s infinite;
-      font-weight: 700;
-      letter-spacing: 2px;
-    }
-
-
-
-    body.inLauncher .instructions {
+    .scanlines {
+      position: fixed;
+      inset: 0;
+      z-index: 60;
+      pointer-events: none;
+      background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.22) 0px, rgba(0, 0, 0, 0.22) 1px, transparent 1px, transparent 3px);
       display: none;
-    }
-
-    @keyframes pulse {
-      0% {
-        opacity: 0.7;
-        transform: scale(1);
-      }
-
-      50% {
-        opacity: 1;
-        transform: scale(1.05);
-      }
-
-      100% {
-        opacity: 0.7;
-        transform: scale(1);
-      }
-    }
-
-    .select-container::before,
-    .select-container::after {
-      display: none;
-    }
-
-    @media (orientation: landscape) and (max-height: 600px) {
-      .character-grid {
-        grid-template-columns: repeat(7, 1fr);
-        gap: 4px;
-        padding: 4px;
-        max-width: 98%;
-      }
-
-      .select-container {
-        height: 100vh;
-      }
-
-      .character-tile {
-        aspect-ratio: 4/3;
-      }
-
-      .character-name {
-        font-size: 0.6em;
-        padding: 3px 2px;
-      }
-    }
-
-    @media (max-width: 768px) {
-      .character-grid {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 4px;
-        padding: 4px;
-        max-width: 95%;
-      }
     }
 
     body.game-active {
@@ -284,84 +376,8 @@
       overflow: hidden;
     }
 
-    body.game-active .select-container,
-    body.game-active .instructions {
+    body.game-active .select-screen {
       display: none;
-    }
-
-    /* MK2-style random select */
-    @keyframes mk2-flash-border {
-      0%   { box-shadow: 0 0 0 4px #ff0, 0 0 15px 4px #ff0; }
-      25%  { box-shadow: 0 0 0 4px #f00, 0 0 15px 4px #f00; }
-      50%  { box-shadow: 0 0 0 4px #0ff, 0 0 15px 4px #0ff; }
-      75%  { box-shadow: 0 0 0 4px #0f0, 0 0 15px 4px #0f0; }
-      100% { box-shadow: 0 0 0 4px #ff0, 0 0 15px 4px #ff0; }
-    }
-
-    .mk2-highlight {
-      animation: mk2-flash-border 0.15s linear infinite;
-      border-radius: 5px;
-      z-index: 100;
-      position: relative;
-    }
-
-    .mk2-selected {
-      animation: mk2-selected-pulse 0.4s ease-in-out 3;
-      border-radius: 5px;
-      z-index: 100;
-      position: relative;
-    }
-
-    @keyframes mk2-selected-pulse {
-      0%   { box-shadow: 0 0 0 4px #fff, 0 0 20px 8px #ff0; }
-      50%  { box-shadow: 0 0 0 6px #ff0, 0 0 30px 12px #f80; }
-      100% { box-shadow: 0 0 0 4px #fff, 0 0 20px 8px #ff0; }
-    }
-
-    .mk2-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.7);
-      z-index: 99;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.3s ease;
-    }
-
-    .mk2-overlay.active {
-      opacity: 1;
-    }
-
-    .random-select-btn {
-      background: linear-gradient(135deg, #cc0000, #ff6600);
-      border: 2px solid #ffd700;
-      color: #ffd700;
-      font-family: 'Orbitron', monospace;
-      font-weight: 700;
-      letter-spacing: 2px;
-      padding: 10px 24px;
-      cursor: pointer;
-      text-transform: uppercase;
-      font-size: 0.9em;
-      margin: 0 0 15px 0;
-      transition: all 0.2s ease;
-      box-shadow: 0 0 15px rgba(255, 100, 0, 0.4);
-    }
-
-    .random-select-btn:hover {
-      background: linear-gradient(135deg, #ff6600, #ffcc00);
-      color: #000;
-      box-shadow: 0 0 25px rgba(255, 200, 0, 0.6);
-      transform: scale(1.05);
-    }
-
-    .random-select-btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      transform: none;
     }
 
     .game-wrapper {
@@ -455,132 +471,26 @@
 </head>
 
 <body>
-  <div class="select-container" id="selectContainer">
-    <div class="character-grid" id="characterGrid">
-      <a href="#scene-0" class="character-tile" data-index="0" data-scene="0">
-        <img src="assets/cyrax.png" alt="Cyrax">
-        <div class="character-name">CYRAX</div>
-      </a>
-
-      <a href="#scene-1" class="character-tile" data-index="1" data-scene="1">
-        <img src="assets/parabomb.png" alt="Parabomb">
-        <div class="character-name">PARABOMB</div>
-      </a>
-
-      <a href="#scene-2" class="character-tile" data-index="2" data-scene="2">
-        <img src="assets/animus.png" alt="Animus">
-        <div class="character-name">ANIMUS</div>
-      </a>
-
-      <a href="#scene-3" class="character-tile" data-index="3" data-scene="3">
-        <img src="assets/liu-kang.png" alt="Liu Kang">
-        <div class="character-name">LIU KANG</div>
-      </a>
-
-      <a href="#scene-4" class="character-tile" data-index="4" data-scene="4">
-        <img src="assets/rainbow-cloud.png" alt="Rainbow Dash">
-        <div class="character-name">RAINBOW DASH</div>
-      </a>
-
-      <a href="#scene-5" class="character-tile" data-index="5" data-scene="5">
-        <img src="assets/bowser.png" alt="Bowser">
-        <div class="character-name">BOWSER</div>
-      </a>
-
-      <a href="#scene-6" class="character-tile" data-index="6" data-scene="6">
-        <img src="assets/tyson.png" alt="Mike Tyson">
-        <div class="character-name">MIKE TYSON</div>
-      </a>
-
-      <a href="#scene-7" class="character-tile" data-index="7" data-scene="7">
-        <img src="assets/beavis.png" alt="Beavis">
-        <div class="character-name">BEAVIS</div>
-      </a>
-
-      <a href="#scene-8" class="character-tile" data-index="8" data-scene="8">
-        <img src="assets/game_asset.png" alt="Scorpion">
-        <div class="character-name">SCORPION</div>
-      </a>
-
-      <a href="#scene-9" class="character-tile" data-index="9" data-scene="9">
-        <img src="assets/santa.png" alt="Santa">
-        <div class="character-name">SANTA</div>
-      </a>
-
-      <div class="character-tile random-tile" data-random="true">
-        <img class="random-frame" src="random-select0.png" alt="Random Select">
-        <img class="random-frame" src="random-select1.png" alt="Random Select">
+  <div class="select-screen">
+    <div class="header">
+      <button type="button" id="prevBtn" class="rotate-btn" title="Previous game — Q / [ / L1 / LT">&#9664; L1</button>
+      <div class="title-block">
+        <div class="title mkf" id="title"></div>
+        <div class="dots" id="dots"></div>
       </div>
-
-      <a href="#scene-10" class="character-tile" data-index="10" data-scene="10">
-        <img src="assets/sonic.png" alt="Sonic">
-        <div class="character-name">SONIC</div>
-      </a>
-
-      <a href="#scene-11" class="character-tile" data-index="11" data-scene="11">
-        <img src="assets/cat-idle.png" alt="Cat">
-        <div class="character-name">CAT</div>
-      </a>
-
-      <a href="#scene-12" class="character-tile" data-index="12" data-scene="12">
-        <img src="assets/red-walk-right.png" alt="Pokemon">
-        <div class="character-name">POKEMON</div>
-      </a>
-      <a href="#scene-13" class="character-tile" data-index="13" data-scene="13">
-        <img src="assets/nemesis-rocket.png" alt="Nemesis" style="width: 100px; height: 75px; object-fit: cover; object-position: 0 0;">
-        <div class="character-name">NEMESIS</div>
-      </a>
-      <a href="#scene-14" class="character-tile" data-index="14" data-scene="14">
-        <img src="assets/naruto-charge.png" alt="Naruto">
-        <div class="character-name">NARUTO</div>
-      </a>
-      <a href="#scene-15" class="character-tile" data-index="15" data-scene="15">
-        <img src="assets/sabin-attack.png" alt="Sabin">
-        <div class="character-name">SABIN</div>
-      </a>
-
-      <a href="#scene-16" class="character-tile" data-index="16" data-scene="16">
-        <img src="assets/suzie-idle.png" alt="Suzie">
-        <div class="character-name">SUZIE</div>
-      </a>
-
-      <a href="#scene-17" class="character-tile" data-index="17" data-scene="17">
-        <img src="assets/country-roulette-box.png" alt="Trump">
-        <div class="character-name">TRUMP</div>
-      </a>
-
-      <a href="#scene-18" class="character-tile" data-index="18" data-scene="18">
-        <img src="assets/ms-pacman-right.png" alt="Ms. Pac-Man">
-        <div class="character-name">MS. PAC-MAN</div>
-      </a>
-
-      <a href="#scene-19" class="character-tile" data-index="19" data-scene="19">
-        <img src="assets/ms-pacman-left.png" alt="Ms. Pac-Man II">
-        <div class="character-name">MS. PAC-MAN</div>
-      </a>
-
-      <a href="#scene-21" class="character-tile" data-index="21" data-scene="21">
-        <img src="assets/goofy-walk.png" alt="Goofy" style="width: 38px; height: 80px; object-fit: none; object-position: 0 0;">
-        <div class="character-name">GOOFY</div>
-      </a>
-
-      <a href="#scene-22" class="character-tile" data-index="22" data-scene="22">
-        <img src="assets/mario-brick.png" alt="Calculator" style="width: 64px; height: 64px; object-fit: none; object-position: 0 0; image-rendering: pixelated;">
-        <div class="character-name">CALCULATOR</div>
-      </a>
-
-      <a href="#scene-23" class="character-tile" data-index="23" data-scene="23">
-        <img src="assets/envy-idle.png" alt="Envy Masked" style="width: 40px; height: 67px; object-fit: none; object-position: 0 0; image-rendering: pixelated;">
-        <div class="character-name">ENVY MASKED</div>
-      </a>
-
-      <a href="#scene-24" class="character-tile" data-index="24" data-scene="24">
-        <img src="assets/ryu.png" alt="Ryu" style="width: 43px; height: 81px; object-fit: none; object-position: 0 0; image-rendering: pixelated;">
-        <div class="character-name">RYU</div>
-      </a>
+      <button type="button" id="nextBtn" class="rotate-btn" title="Next game — E / ] / R1 / RT">R1 &#9654;</button>
     </div>
 
+    <div class="stage" id="stage">
+      <div class="cube" id="cube"></div>
+    </div>
 
+    <div class="footer">
+      <div class="status mkf" id="status"></div>
+      <div class="hints">ARROWS MOVE &middot; ENTER SELECT &middot; R RANDOM &middot; Q / E OR L1 / R1 OR SWIPE &mdash; SWITCH GAME</div>
+    </div>
+
+    <div class="scanlines" id="scanlines"></div>
   </div>
 
   <div class="game-wrapper" id="gameWrapper" aria-live="polite">
@@ -592,321 +502,91 @@
   </div>
 
   <script type="module">
-    import { startGame, destroyGame } from './src/main.js';
+    // scene indexes match the roster order in src/main.js
+    const ROSTER = [
+      { name: 'CYRAX', img: 'assets/cyrax.png', scene: 0 },
+      { name: 'PARABOMB', img: 'assets/parabomb.png', scene: 1 },
+      { name: 'ANIMUS', img: 'assets/animus.png', scene: 2 },
+      { name: 'LIU KANG', img: 'assets/liu-kang.png', scene: 3 },
+      { name: 'RAINBOW DASH', img: 'assets/rainbow-cloud.png', scene: 4 },
+      { name: 'BOWSER', img: 'assets/bowser.png', scene: 5 },
+      { name: 'MIKE TYSON', img: 'assets/tyson.png', scene: 6 },
+      { name: 'BEAVIS', img: 'assets/beavis.png', scene: 7 },
+      { name: 'SCORPION', img: 'assets/game_asset.png', scene: 8 },
+      { name: 'SANTA', img: 'assets/santa.png', scene: 9 },
+      { name: 'SONIC', img: 'assets/sonic.png', scene: 10 },
+      { name: 'CAT', img: 'assets/cat-idle.png', scene: 11 },
+      { name: 'POKEMON', img: 'assets/red-walk-right.png', scene: 12 },
+      { name: 'NEMESIS', img: 'assets/nemesis-rocket.png', scene: 13, crop: { w: 100, h: 75, fit: 'cover' } },
+      { name: 'NARUTO', img: 'assets/naruto-charge.png', scene: 14 },
+      { name: 'SABIN', img: 'assets/sabin-attack.png', scene: 15 },
+      { name: 'SUZIE', img: 'assets/suzie-idle.png', scene: 16 },
+      { name: 'TRUMP', img: 'assets/country-roulette-box.png', scene: 17 },
+      { name: 'MS. PAC-MAN', img: 'assets/ms-pacman-right.png', scene: 18 },
+      { name: 'MS. PAC-MAN', img: 'assets/ms-pacman-left.png', scene: 19 },
+      { name: 'GOOFY', img: 'assets/goofy-walk.png', scene: 21, crop: { w: 38, h: 80, fit: 'none' } },
+      { name: 'CALCULATOR', img: 'assets/mario-brick.png', scene: 22, crop: { w: 64, h: 64, fit: 'none' } },
+      { name: 'ENVY MASKED', img: 'assets/envy-idle.png', scene: 23, crop: { w: 40, h: 67, fit: 'none' } },
+      { name: 'RYU', img: 'assets/ryu.png', scene: 24, crop: { w: 43, h: 81, fit: 'none' } }
+    ].map((c, ri) => { c.ri = ri; return c; });
 
-    class CharacterSelect {
-      constructor({ onSelect, initialIndex = 0 } = {}) {
-        this.onSelect = onSelect;
-        this.tiles = Array.from(document.querySelectorAll('.character-tile'));
-        this.currentIndex = this.normalizeIndex(initialIndex);
-        this.cols = this.getCols();
-        this.handleKeydown = this.handleKeydown.bind(this);
+    const TITLES = ['MONKEY KOMBAT', 'MONKEY KOMBAT II', 'MONKEY KOMBAT 3', 'MONKEY KOMBAT 4'];
+    const ROTATE_DURATION = 0.8;
 
-        this.init();
-      }
+    // --- MK bitmap font (assets/font-mkii.png, 36 glyphs of 16x16) ---
+    const MKF_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 
-      normalizeIndex(index) {
-        const parsed = Number.parseInt(index, 10);
-        if (Number.isNaN(parsed)) {
-          return 0;
-        }
-        return Math.min(Math.max(parsed, 0), this.tiles.length - 1);
-      }
-
-      init() {
-        this.updateSelection({ scroll: false });
-
-        document.addEventListener('keydown', this.handleKeydown);
-
-        window.addEventListener('resize', () => {
-          this.cols = this.getCols();
-        });
-
-        this.tiles.forEach((tile, index) => {
-          tile.addEventListener('click', (event) => {
-            if (document.body.classList.contains('game-active')) {
-              return;
-            }
-
-            event.preventDefault();
-            this.currentIndex = index;
-            this.updateSelection();
-
-            if (tile.dataset.random === 'true') {
-              this.triggerRandomSelect();
-              return;
-            }
-
-            const sceneValue = tile.dataset.scene;
-            if (typeof sceneValue === 'undefined') {
-              return;
-            }
-
-            this.selectCurrent();
-          });
-        });
-      }
-
-      getCols() {
-        if (window.matchMedia('(orientation: landscape) and (max-height: 600px)').matches) {
-          return 7;
-        }
-        if (window.matchMedia('(max-width: 768px)').matches) {
-          return 3;
-        }
-        return 4;
-      }
-
-      handleKeydown(event) {
-        if (document.body.classList.contains('game-active')) {
-          return;
-        }
-
-        switch (event.key) {
-          case 'ArrowUp':
-            event.preventDefault();
-            this.moveUp();
-            break;
-          case 'ArrowDown':
-            event.preventDefault();
-            this.moveDown();
-            break;
-          case 'ArrowLeft':
-            event.preventDefault();
-            this.moveLeft();
-            break;
-          case 'ArrowRight':
-            event.preventDefault();
-            this.moveRight();
-            break;
-          case 'Enter':
-          case ' ':
-            event.preventDefault();
-            this.selectCurrent();
-            break;
-          default:
-            break;
-        }
-      }
-
-      moveUp() {
-        const currentRow = Math.floor(this.currentIndex / this.cols);
-        if (currentRow > 0) {
-          this.currentIndex -= this.cols;
-          this.updateSelection();
-        }
-      }
-
-      moveDown() {
-        const newIndex = this.currentIndex + this.cols;
-        if (newIndex < this.tiles.length) {
-          this.currentIndex = newIndex;
-          this.updateSelection();
-        }
-      }
-
-      moveLeft() {
-        const currentCol = this.currentIndex % this.cols;
-        if (currentCol > 0) {
-          this.currentIndex -= 1;
-          this.updateSelection();
-        }
-      }
-
-      moveRight() {
-        const currentCol = this.currentIndex % this.cols;
-        if (currentCol < this.cols - 1 && this.currentIndex + 1 < this.tiles.length) {
-          this.currentIndex += 1;
-          this.updateSelection();
-        }
-      }
-
-      updateSelection({ scroll = true } = {}) {
-        this.tiles.forEach((tile) => tile.classList.remove('selected'));
-
-        const currentTile = this.tiles[this.currentIndex];
-        if (!currentTile) {
-          return;
-        }
-
-        currentTile.classList.add('selected');
-        if (scroll) {
-          currentTile.scrollIntoView({
-            behavior: 'smooth',
-            block: 'center',
-            inline: 'center',
-          });
-        }
-      }
-
-      selectCurrent() {
-        const currentTile = this.tiles[this.currentIndex];
-        if (!currentTile) {
-          return;
-        }
-
-        if (currentTile.dataset.random === 'true') {
-          this.triggerRandomSelect();
-          return;
-        }
-
-        const sceneValue = currentTile.dataset.scene;
-        if (typeof sceneValue === 'undefined') {
-          return;
-        }
-
-        const sceneIndex = Number.parseInt(sceneValue, 10);
-        if (Number.isNaN(sceneIndex)) {
-          return;
-        }
-
-        if (this.onSelect) {
-          this.onSelect(sceneIndex);
-        }
-      }
-
-      triggerRandomSelect() {
-        const sceneTiles = this.tiles.filter(t => typeof t.dataset.scene !== 'undefined');
-        mk2RandomSelect(sceneTiles, (chosenIndex) => {
-          const sceneIndex = Number.parseInt(sceneTiles[chosenIndex].dataset.scene, 10);
-          if (this.onSelect) {
-            this.onSelect(sceneIndex);
-          }
-        });
-      }
-
-      focus(index) {
-        this.currentIndex = this.normalizeIndex(index);
-        this.updateSelection({ scroll: false });
-      }
-
-      focusCurrent() {
-        this.updateSelection({ scroll: false });
-      }
-
-      isValidSceneIndex(sceneIndex) {
-        const parsed = Number.parseInt(sceneIndex, 10);
-        return !Number.isNaN(parsed)
-          && parsed >= 0
-          && parsed < this.tiles.length
-          && typeof this.tiles[parsed]?.dataset.scene !== 'undefined';
-      }
-    }
-
-    // MK2-style random select: rapidly cycles through all character tiles with
-    // a flashing colored border, decelerates, then locks on the chosen fighter.
-    function mk2RandomSelect(tiles, callback) {
-      const overlay = document.createElement('div');
-      overlay.className = 'mk2-overlay';
-      document.body.appendChild(overlay);
-      setTimeout(() => overlay.classList.add('active'), 10);
-
-      const totalCycles = 24 + Math.floor(Math.random() * 8); // 24-31 steps
-      const chosenIndex = Math.floor(Math.random() * tiles.length);
-
-      let currentStep = 0;
-      let currentIndex = Math.floor(Math.random() * tiles.length);
-      let prevIndex = -1;
-
-      function step() {
-        if (prevIndex >= 0) {
-          tiles[prevIndex].classList.remove('mk2-highlight');
-        }
-
-        currentIndex = (currentIndex + 1) % tiles.length;
-        // On the last step, force land on chosen fighter
-        if (currentStep === totalCycles - 1) {
-          currentIndex = chosenIndex;
-        }
-
-        tiles[currentIndex].classList.add('mk2-highlight');
-        tiles[currentIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-        prevIndex = currentIndex;
-        currentStep++;
-
-        if (currentStep < totalCycles) {
-          // MK2 deceleration curve: starts ~60ms, slows to ~350ms
-          const progress = currentStep / totalCycles;
-          const delay = 60 + Math.pow(progress, 2.5) * 300;
-          setTimeout(step, delay);
+    function mkfRender(el, text) {
+      const str = String(text).toUpperCase();
+      if (el._mkfText === str) return;
+      el._mkfText = str;
+      el.textContent = '';
+      for (const ch of str) {
+        let span;
+        if (ch === ' ') {
+          span = document.createElement('span');
+          span.className = 'mkf-space';
         } else {
-          // Selection locked — pulse the winner MK2 style
-          tiles[currentIndex].classList.remove('mk2-highlight');
-          tiles[currentIndex].classList.add('mk2-selected');
-
-          setTimeout(() => {
-            tiles[currentIndex].classList.remove('mk2-selected');
-            overlay.classList.remove('active');
-            setTimeout(() => {
-              overlay.remove();
-              callback(chosenIndex);
-            }, 300);
-          }, 1400);
+          const idx = MKF_CHARS.indexOf(ch);
+          span = document.createElement('span');
+          if (idx >= 0) {
+            span.className = 'mkf-glyph';
+            span.style.backgroundPosition = -idx + 'em 0';
+          } else {
+            span.className = 'mkf-fb';
+            span.textContent = ch;
+          }
         }
+        el.appendChild(span);
       }
-
-      step();
     }
 
+    // --- Launcher glue (same contract as the old select screen) ---
     const backButton = document.getElementById('backButton');
     const gameUi = document.querySelector('.game-ui');
-    const statusLabel = document.getElementById('gameStatus');
-    const params = new URLSearchParams(window.location.search);
-    const debugEnabled = params.get('debug') === '1';
-    const initialSceneParam = Number.parseInt(params.get('scene'), 10);
+    const gameStatusLabel = document.getElementById('gameStatus');
+    const urlParams = new URLSearchParams(window.location.search);
+    const debugEnabled = urlParams.get('debug') === '1';
 
-    const characterSelect = new CharacterSelect({
-      onSelect: (sceneIndex) => launchScene(sceneIndex),
-      initialIndex: !Number.isNaN(initialSceneParam) ? initialSceneParam : 0,
-    });
+    let gameModule = null;
+    // bumped on every launch/exit so a launch that was cancelled while its
+    // module import was still in flight never boots a hidden zombie game
+    let launchGen = 0;
 
-    if (!Number.isNaN(initialSceneParam) && characterSelect.isValidSceneIndex(initialSceneParam)) {
-      launchScene(initialSceneParam, { updateHistory: false });
-    } else {
-      updateUrl(null);
+    async function loadGameModule() {
+      if (!gameModule) {
+        gameModule = await import('./src/main.js');
+      }
+      return gameModule;
     }
 
-    backButton.addEventListener('click', () => {
-      exitToSelect();
-    });
-
-
-    document.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape' && document.body.classList.contains('game-active')) {
-        event.preventDefault();
-        exitToSelect();
+    function sceneFromUrl() {
+      let n = Number.parseInt(urlParams.get('scene'), 10);
+      if (Number.isNaN(n)) {
+        const m = /^#scene-(\d+)$/.exec(window.location.hash);
+        if (m) n = Number.parseInt(m[1], 10);
       }
-    });
-
-    document.addEventListener('enemy-defeated', () => {
-      gameUi.classList.add('visible');
-    });
-
-    function launchScene(sceneIndex, { updateHistory = true } = {}) {
-      const idx = Number.parseInt(sceneIndex, 10);
-      if (Number.isNaN(idx)) {
-        return;
-      }
-
-      document.body.classList.add('game-active');
-      statusLabel.textContent = 'Press ESC to return';
-      characterSelect.focus(idx);
-
-      startGame({ sceneIndex: idx, debug: debugEnabled, parent: 'gameRoot' });
-
-      if (updateHistory) {
-        updateUrl(idx);
-      }
-    }
-
-    function exitToSelect() {
-      destroyGame();
-      document.body.classList.remove('game-active');
-      statusLabel.textContent = 'Select a fighter to begin';
-      gameUi.classList.remove('visible');
-      updateUrl(null);
-      characterSelect.focusCurrent();
+      return n;
     }
 
     function updateUrl(sceneIndex) {
@@ -923,7 +603,483 @@
         url.searchParams.delete('debug');
       }
 
+      url.hash = '';
       window.history.replaceState(null, '', url);
+    }
+
+    async function launchScene(sceneIndex, { updateHistory = true } = {}) {
+      const idx = Number.parseInt(sceneIndex, 10);
+      if (Number.isNaN(idx)) {
+        return;
+      }
+
+      const gen = ++launchGen;
+      document.body.classList.add('game-active');
+      gameStatusLabel.textContent = 'Press ESC to return';
+      focusScene(idx);
+
+      try {
+        const mod = await loadGameModule();
+        if (gen !== launchGen) return; // user exited while the module loaded
+        mod.startGame({ sceneIndex: idx, debug: debugEnabled, parent: 'gameRoot' });
+      } catch (err) {
+        console.error('Failed to start game', err);
+        if (gen !== launchGen) return;
+        document.body.classList.remove('game-active');
+        setState({ selected: null });
+        return;
+      }
+
+      if (updateHistory) {
+        updateUrl(idx);
+      }
+    }
+
+    function exitToSelect() {
+      launchGen++;
+      if (gameModule) {
+        gameModule.destroyGame();
+      }
+      // Phaser doesn't reliably remove its canvas on destroy; don't let dead
+      // WebGL canvases pile up across launches (contexts are browser-capped)
+      document.querySelectorAll('#gameRoot canvas').forEach((c) => c.remove());
+      document.body.classList.remove('game-active');
+      gameStatusLabel.textContent = 'Select a fighter to begin';
+      gameUi.classList.remove('visible');
+      updateUrl(null);
+      setState({ selected: null });
+    }
+
+    backButton.addEventListener('click', () => {
+      exitToSelect();
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && document.body.classList.contains('game-active')) {
+        event.preventDefault();
+        exitToSelect();
+      }
+    });
+
+    document.addEventListener('enemy-defeated', () => {
+      gameUi.classList.add('visible');
+    });
+
+    // --- Rotating cube character select ---
+    const state = {
+      wall: 0,
+      angle: 0,
+      cursor: 0,
+      selected: null,
+      roulette: -1,
+      rouletteActive: false,
+      pulseWall: -1,
+      pulseTile: -1,
+      dimOthers: false,
+      portrait: window.innerHeight > window.innerWidth
+    };
+    let locked = false;
+    let spinT = null;
+    let gpPrev = [], axPrev = [0, 0], gpResync = true, touch = null;
+
+    const stageEl = document.getElementById('stage');
+    const cubeEl = document.getElementById('cube');
+    const titleEl = document.getElementById('title');
+    const statusEl = document.getElementById('status');
+    const dotsEl = document.getElementById('dots');
+    const dotEls = [];
+
+    document.getElementById('scanlines').style.display =
+      (urlParams.get('scanlines') === '1' || urlParams.get('scanlines') === 'true') ? 'block' : 'none';
+
+    for (let i = 0; i < 4; i++) {
+      const dot = document.createElement('button');
+      dot.type = 'button';
+      dot.className = 'dot';
+      dot.title = TITLES[i];
+      dot.setAttribute('aria-label', TITLES[i]);
+      dot.addEventListener('click', () => { if (selectActive()) rotateTo(i); });
+      dotsEl.appendChild(dot);
+      dotEls.push(dot);
+    }
+
+    document.getElementById('prevBtn').addEventListener('click', () => { if (selectActive()) rotate(-1); });
+    document.getElementById('nextBtn').addEventListener('click', () => { if (selectActive()) rotate(1); });
+
+    function selectActive() {
+      return !document.body.classList.contains('game-active');
+    }
+
+    function grid() {
+      const cols = state.portrait ? 4 : 6;
+      const rows = state.portrait ? 6 : 4;
+      const mid = (Math.ceil(rows / 2) - 1) * cols + Math.floor(cols / 2);
+      return { cols, rows, mid, cap: cols * rows };
+    }
+
+    function wallsData() {
+      const g = grid();
+      const per = g.cap - 1;
+      return [0, 1, 2, 3].map((w) => {
+        const chars = ROSTER.slice(w * per, w * per + per);
+        const tiles = [];
+        let ci = 0;
+        for (let i = 0; i < g.cap; i++) {
+          if (i === g.mid) { tiles.push({ kind: 'random' }); continue; }
+          const c = chars[ci++];
+          tiles.push(c ? { kind: 'char', ...c } : { kind: 'unknown' });
+        }
+        return tiles;
+      });
+    }
+
+    // DOM caches, rebuilt when the grid shape (orientation) changes
+    let wallEls = [], tileEls = [], dimEls = [], builtCols = 0;
+    const layout = { tileW: 100, tileH: 75, wallW: 0, wallH: 0, depth: 0 };
+
+    function measureLayout() {
+      const g = grid();
+      const r = stageEl.getBoundingClientRect();
+      const gap = 5, pad = 5, bord = 4;
+      const chrome = 2 * (pad + bord);
+      const availW = Math.max(120, r.width * 0.97 - chrome - (g.cols - 1) * gap);
+      const availH = Math.max(120, r.height * 0.97 - chrome - (g.rows - 1) * gap);
+      const tileW = Math.min(availW / g.cols, (availH / g.rows) * (4 / 3));
+      layout.tileW = tileW;
+      layout.tileH = tileW * 0.75;
+      layout.wallW = g.cols * tileW + (g.cols - 1) * gap + chrome;
+      layout.wallH = g.rows * layout.tileH + (g.rows - 1) * gap + chrome;
+      layout.depth = layout.wallW / 2;
+    }
+
+    function buildWalls() {
+      const g = grid();
+      builtCols = g.cols;
+      cubeEl.innerHTML = '';
+      wallEls = []; tileEls = []; dimEls = [];
+      wallsData().forEach((tiles, w) => {
+        const wallEl = document.createElement('div');
+        wallEl.className = 'wall';
+        wallEl.style.gridTemplateColumns = 'repeat(' + g.cols + ', 1fr)';
+        wallEl.style.gridTemplateRows = 'repeat(' + g.rows + ', 1fr)';
+        const els = [];
+        tiles.forEach((t, i) => {
+          const el = document.createElement('div');
+          el.className = 'tile ' + t.kind;
+          if (t.kind !== 'unknown') {
+            el.setAttribute('role', 'button');
+            el.setAttribute('aria-label', t.kind === 'char' ? t.name : 'Random select');
+            el.tabIndex = -1;
+            el.addEventListener('focus', () => {
+              if (!locked && selectActive() && w === state.wall) setState({ cursor: i });
+            });
+          }
+          if (t.kind === 'char') {
+            const img = document.createElement('img');
+            img.className = 'char';
+            img.src = t.img;
+            img.alt = t.name;
+            img.draggable = false;
+            el.appendChild(img);
+            const nm = document.createElement('div');
+            nm.className = 'nameplate mkf';
+            mkfRender(nm, t.name);
+            el.appendChild(nm);
+          } else if (t.kind === 'random') {
+            ['random-select0.png', 'random-select1.png'].forEach((src, f) => {
+              const img = document.createElement('img');
+              img.className = 'rs rs' + f;
+              img.src = src;
+              img.alt = 'Random select';
+              img.draggable = false;
+              el.appendChild(img);
+            });
+          } else {
+            const q = document.createElement('div');
+            q.className = 'qmark';
+            q.textContent = '?';
+            el.appendChild(q);
+          }
+          el.addEventListener('click', () => onTileClick(w, i, t));
+          wallEl.appendChild(el);
+          els.push(el);
+        });
+        const dim = document.createElement('div');
+        dim.className = 'wall-dim';
+        wallEl.appendChild(dim);
+        cubeEl.appendChild(wallEl);
+        wallEls.push(wallEl);
+        tileEls.push(els);
+        dimEls.push(dim);
+      });
+    }
+
+    function render() {
+      const g = grid();
+      measureLayout();
+      if (g.cols !== builtCols) buildWalls();
+
+      stageEl.style.perspective = Math.round(Math.max(1100, layout.wallW * 1.6)) + 'px';
+      cubeEl.style.width = Math.round(layout.wallW) + 'px';
+      cubeEl.style.height = Math.round(layout.wallH) + 'px';
+      cubeEl.style.transition = 'transform ' + ROTATE_DURATION + 's cubic-bezier(0.45, 0, 0.18, 1)';
+      cubeEl.style.transform = 'translateZ(' + (-layout.depth).toFixed(1) + 'px) rotateY(' + state.angle + 'deg)';
+
+      const nameFs = Math.max(7, Math.min(14, layout.tileH * 0.11));
+      const namePad = Math.max(2, Math.round(layout.tileH * 0.05));
+      const qFs = Math.round(layout.tileH * 0.5);
+      const cursor = Math.min(state.cursor, g.cap - 1);
+
+      wallsData().forEach((tiles, w) => {
+        const isFront = w === state.wall;
+        wallEls[w].style.transform = 'rotateY(' + (w * 90) + 'deg) translateZ(' + layout.depth.toFixed(1) + 'px)';
+        dimEls[w].style.opacity = isFront ? 0 : 0.3;
+        tiles.forEach((t, i) => {
+          const el = tileEls[w][i];
+          const isCursor = isFront && cursor === i;
+          const isSel = state.selected && t.kind === 'char' && t.ri === state.selected.ri;
+          const isRoul = isFront && state.roulette === i;
+          const isPulse = state.pulseWall === w && state.pulseTile === i;
+          el.classList.toggle('roulette', isRoul);
+          el.classList.toggle('pulse', !isRoul && isPulse);
+          el.classList.toggle('cursor', !isRoul && !isPulse && isCursor);
+          el.classList.toggle('selected', !!isSel);
+          el.classList.toggle('dimmed', state.dimOthers && !isRoul && !isPulse);
+          if (t.kind !== 'unknown') el.tabIndex = isFront ? 0 : -1;
+          if (t.kind === 'char') {
+            const img = el.querySelector('img.char');
+            if (t.crop) {
+              const sc = Math.min(1, (layout.tileW * 0.85) / t.crop.w, (layout.tileH * 0.8) / t.crop.h);
+              img.style.maxWidth = 'none';
+              img.style.maxHeight = 'none';
+              img.style.width = t.crop.w + 'px';
+              img.style.height = t.crop.h + 'px';
+              img.style.objectFit = t.crop.fit;
+              img.style.objectPosition = '0 0';
+              img.style.imageRendering = 'pixelated';
+              img.style.transform = 'scale(' + (Math.round(sc * 100) / 100) + ')';
+            }
+            const nm = el.querySelector('.nameplate');
+            nm.style.fontSize = (Math.round(nameFs * 10) / 10) + 'px';
+            nm.style.padding = namePad + 'px 2px';
+          } else if (t.kind === 'unknown') {
+            el.querySelector('.qmark').style.fontSize = qFs + 'px';
+          }
+        });
+      });
+
+      mkfRender(titleEl, TITLES[state.wall]);
+      dotEls.forEach((dot, i) => dot.classList.toggle('active', i === state.wall));
+      mkfRender(statusEl, state.rouletteActive ? 'RANDOM SELECT' : (state.selected ? state.selected.name : 'SELECT YOUR FIGHTER'));
+      statusEl.classList.toggle('chosen', !!(state.selected && !state.rouletteActive));
+    }
+
+    function setState(patch) {
+      Object.assign(state, patch);
+      render();
+    }
+
+    function move(dx, dy) {
+      if (locked) return;
+      const g = grid();
+      const c = Math.min(state.cursor, g.cap - 1);
+      let col = c % g.cols;
+      let row = Math.floor(c / g.cols);
+      if (dx === 1 && col === g.cols - 1) { rotate(1, row * g.cols); return; }
+      if (dx === -1 && col === 0) { rotate(-1, row * g.cols + (g.cols - 1)); return; }
+      col = Math.min(g.cols - 1, Math.max(0, col + dx));
+      row = Math.min(g.rows - 1, Math.max(0, row + dy));
+      setState({ cursor: row * g.cols + col });
+    }
+
+    function rotate(dir, cursorAfter) {
+      if (locked) return;
+      setState({
+        angle: state.angle - dir * 90,
+        wall: ((state.wall + dir) % 4 + 4) % 4,
+        cursor: typeof cursorAfter === 'number' ? cursorAfter : state.cursor
+      });
+    }
+
+    function rotateTo(w) {
+      if (locked) return;
+      const cur = state.wall;
+      if (w === cur) return;
+      let d = (w - cur + 4) % 4;
+      if (d === 3) d = -1;
+      setState({ angle: state.angle - d * 90, wall: w });
+    }
+
+    // point the cube at the fighter for a scene (used for deep links / game exit)
+    function focusScene(sceneIndex) {
+      const c = ROSTER.find((r) => r.scene === sceneIndex);
+      if (!c) return;
+      const g = grid();
+      const per = g.cap - 1;
+      const w = Math.floor(c.ri / per);
+      const pos = c.ri - w * per;
+      const tileIdx = pos < g.mid ? pos : pos + 1;
+      setState({ wall: w, angle: -90 * w, cursor: tileIdx });
+    }
+
+    function selectCurrent() {
+      if (locked) return;
+      const g = grid();
+      const idx = Math.min(state.cursor, g.cap - 1);
+      const t = wallsData()[state.wall][idx];
+      if (!t) return;
+      if (t.kind === 'random') { startRoulette(); return; }
+      if (t.kind !== 'char') return;
+      choose(state.wall, idx, t);
+    }
+
+    function onTileClick(w, i, t) {
+      if (locked || !selectActive()) return;
+      if (w !== state.wall) { rotateTo(w); return; }
+      setState({ cursor: i });
+      if (t.kind === 'random') startRoulette();
+      else if (t.kind === 'char') choose(w, i, t);
+    }
+
+    // MK2-style lock-in: pulse the chosen fighter, dim the rest, then fight
+    function choose(w, i, t) {
+      locked = true;
+      setState({ selected: { ri: t.ri, name: t.name }, pulseWall: w, pulseTile: i, dimOthers: true });
+      spinT = setTimeout(() => {
+        locked = false;
+        setState({ pulseWall: -1, pulseTile: -1, dimOthers: false });
+        launchScene(t.scene);
+      }, 1300);
+    }
+
+    function startRoulette() {
+      if (locked) return;
+      const wall = state.wall;
+      const tiles = wallsData()[wall];
+      const idxs = [];
+      tiles.forEach((t, i) => { if (t.kind === 'char') idxs.push(i); });
+      if (!idxs.length) {
+        rotateTo(0);
+        setTimeout(startRoulette, ROTATE_DURATION * 1000 + 80);
+        return;
+      }
+      locked = true;
+      setState({ rouletteActive: true, dimOthers: true, selected: null });
+      const total = idxs.length === 1 ? 9 : 24 + Math.floor(Math.random() * 8);
+      const chosenPos = Math.floor(Math.random() * idxs.length);
+      let step = 0;
+      let pos = Math.floor(Math.random() * idxs.length);
+      const tick = () => {
+        pos = (pos + 1) % idxs.length;
+        if (step === total - 1) pos = chosenPos;
+        setState({ roulette: idxs[pos], cursor: idxs[pos] });
+        step++;
+        if (step < total) {
+          const p = step / total;
+          spinT = setTimeout(tick, 60 + Math.pow(p, 2.5) * 300);
+        } else {
+          const winner = tiles[idxs[pos]];
+          setState({ roulette: -1, pulseWall: wall, pulseTile: idxs[pos], selected: { ri: winner.ri, name: winner.name }, rouletteActive: false });
+          spinT = setTimeout(() => {
+            locked = false;
+            setState({ pulseWall: -1, pulseTile: -1, dimOthers: false });
+            launchScene(winner.scene);
+          }, 1400);
+        }
+      };
+      tick();
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (!selectActive()) return;
+      const k = e.key;
+      // let native buttons (L1/R1, dots, back) keep their own Enter/Space activation
+      if ((k === 'Enter' || k === ' ') && e.target instanceof Element && e.target.matches('button')) return;
+      if (k === 'ArrowUp') { e.preventDefault(); move(0, -1); }
+      else if (k === 'ArrowDown') { e.preventDefault(); move(0, 1); }
+      else if (k === 'ArrowLeft') { e.preventDefault(); move(-1, 0); }
+      else if (k === 'ArrowRight') { e.preventDefault(); move(1, 0); }
+      else if (k === 'Enter' || k === ' ') { e.preventDefault(); selectCurrent(); }
+      else if (k === 'q' || k === 'Q' || k === '[' || k === 'PageUp') { e.preventDefault(); rotate(-1); }
+      else if (k === 'e' || k === 'E' || k === ']' || k === 'PageDown') { e.preventDefault(); rotate(1); }
+      else if (k === 'r' || k === 'R') { e.preventDefault(); startRoulette(); }
+    });
+
+    function pollGamepad() {
+      if (!selectActive()) { gpPrev = []; gpResync = true; return; }
+      const pads = (navigator.getGamepads && navigator.getGamepads()) || [];
+      let gp = null;
+      for (let i = 0; i < pads.length; i++) { if (pads[i]) { gp = pads[i]; break; } }
+      if (!gp) { gpPrev = []; gpResync = true; return; }
+      if (gpResync) {
+        // swallow buttons still held from inside a game (or at first connect)
+        // so they don't register as fresh presses and instantly re-launch
+        gpPrev = gp.buttons.map((b) => b.pressed);
+        axPrev = [gp.axes[0] || 0, gp.axes[1] || 0];
+        gpResync = false;
+        return;
+      }
+      const prev = gpPrev;
+      const pressed = (i) => !!(gp.buttons[i] && gp.buttons[i].pressed);
+      const edge = (i) => pressed(i) && !prev[i];
+      if (edge(4) || edge(6)) rotate(-1);
+      if (edge(5) || edge(7)) rotate(1);
+      if (edge(12)) move(0, -1);
+      if (edge(13)) move(0, 1);
+      if (edge(14)) move(-1, 0);
+      if (edge(15)) move(1, 0);
+      if (edge(0)) selectCurrent();
+      if (edge(3)) startRoulette();
+      const ax = gp.axes[0] || 0;
+      const ay = gp.axes[1] || 0;
+      const t = 0.55;
+      if (ax > t && axPrev[0] <= t) move(1, 0);
+      if (ax < -t && axPrev[0] >= -t) move(-1, 0);
+      if (ay > t && axPrev[1] <= t) move(0, 1);
+      if (ay < -t && axPrev[1] >= -t) move(0, -1);
+      axPrev = [ax, ay];
+      gpPrev = gp.buttons.map((b) => b.pressed);
+    }
+    (function gpLoop() { pollGamepad(); requestAnimationFrame(gpLoop); })();
+
+    stageEl.addEventListener('touchstart', (e) => {
+      const t = e.touches && e.touches[0];
+      if (t) touch = { x: t.clientX, y: t.clientY };
+    }, { passive: true });
+    stageEl.addEventListener('touchend', (e) => {
+      const t = e.changedTouches && e.changedTouches[0];
+      if (t && touch) {
+        const dx = t.clientX - touch.x;
+        const dy = t.clientY - touch.y;
+        if (Math.abs(dx) > 64 && Math.abs(dx) > Math.abs(dy) * 1.5 && !locked && selectActive()) {
+          rotate(dx < 0 ? 1 : -1);
+        }
+      }
+      touch = null;
+    }, { passive: true });
+
+    window.addEventListener('resize', () => {
+      const portrait = window.innerHeight > window.innerWidth;
+      if (portrait !== state.portrait && locked) {
+        // grid shape changes with orientation, so tile indices captured by a
+        // running roulette/selection pulse go stale — cancel it cleanly
+        clearTimeout(spinT);
+        locked = false;
+        Object.assign(state, { roulette: -1, rouletteActive: false, pulseWall: -1, pulseTile: -1, dimOthers: false });
+      }
+      state.portrait = portrait;
+      render();
+    });
+    if (window.ResizeObserver) new ResizeObserver(() => render()).observe(stageEl);
+
+    render();
+
+    // deep link: ?scene=N (or legacy #scene-N) boots straight into that game
+    const initialScene = sceneFromUrl();
+    if (!Number.isNaN(initialScene) && ROSTER.some((r) => r.scene === initialScene)) {
+      launchScene(initialScene, { updateHistory: false });
+    } else {
+      updateUrl(null);
     }
   </script>
 </body>
