@@ -53,7 +53,7 @@ export default class Game extends Phaser.Scene {
             frameHeight: 22
         });
 
-        this.load.audio('boomThrow', './assets/mk3-00695-bomb-eject.wav');
+        this.load.audio('boomThrow', './assets/sonic-boom.wav');
         this.load.audio('boomImpact', './assets/mk3-00500-explosion.wav');
     }
 
