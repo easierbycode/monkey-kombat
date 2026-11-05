@@ -94,17 +94,25 @@ export default class Cammy extends Phaser.Physics.Arcade.Sprite {
         });
     }
 
-    // Monkey is gone: spiral down to the floor and stand.
+    // Monkey is gone: crouch slightly, then spring up and off the top of the screen, still spinning.
     finish() {
         this.scene.tweens.add({
             targets: this,
-            y: this.scene.game.config.height - this.displayHeight / 2,
-            duration: 500,
-            ease: 'Bounce.easeOut',
+            y: this.y + 25,
+            duration: 150,
+            ease: 'Quad.easeOut',
             onComplete: () => {
-                this.isSpinning = false;
-                this.anims.stop();
-                this.setFrame('atlas_s7');
+                this.scene.tweens.add({
+                    targets: this,
+                    y: -this.displayHeight,
+                    duration: 700,
+                    ease: 'Cubic.easeIn',
+                    onComplete: () => {
+                        this.isSpinning = false;
+                        this.anims.stop();
+                        this.setVisible(false);
+                    }
+                });
             }
         });
     }

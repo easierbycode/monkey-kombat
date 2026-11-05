@@ -126,7 +126,9 @@ export default class Monkey extends Phaser.Physics.Arcade.Sprite {
         }
 
         // show CodeMonkey.Games text
-        scene.add.text(this.x - (this.displayWidth + 10), this.y - (this.displayHeight / 2), 'CodeMonkey.Games', { font: '"Bangers"' });
+        // Depth is above every character/effect depth used by the scenes so the text is never hidden
+        scene.add.text(this.x - (this.displayWidth + 10), this.y - (this.displayHeight / 2), 'CodeMonkey.Games', { font: '"Bangers"' })
+            .setDepth( 10000 );
     }
 
     destroy() {
