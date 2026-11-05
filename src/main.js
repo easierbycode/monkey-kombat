@@ -25,6 +25,7 @@ import Game22 from './scenes/game22-calculator.js';
 import Game23 from './scenes/game23-envy-masked.js';
 import Game24Ryu from './scenes/game22-ryu.js';
 import Game25SonicBoom from './scenes/game25-sonic-boom.js';
+import Game26Cammy from './scenes/game26-cammy.js';
 
 window.Phaser = Phaser;
 
@@ -55,6 +56,7 @@ const scenes = [
   Game23,
   Game24Ryu,
   Game25SonicBoom,
+  Game26Cammy,
 ];
 
 let gameInstance = null;
