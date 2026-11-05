@@ -75,6 +75,7 @@ export default class Cammy extends Phaser.Physics.Arcade.Sprite {
     // Whirl against the monkey, ramping the spin rate like Sonic does, then hit.
     startSpinOnMonkey() {
         this.emit('spinningStarted'); // scene starts spinning the monkey
+        this.anims.msPerFrame = 1000 / 18; // descent left her at ~48fps; restart the ramp in sync with the monkey
         this.emit('spinRateChange', 18);
 
         this.scene.time.delayedCall(1200, () => {
