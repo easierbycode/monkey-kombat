@@ -31,7 +31,8 @@ const KICK_REACH_PX = 6;
 
 const MONKEY_BODY_WIDTH_FRACTION = 0.45;
 
-const KICK_LAUNCH_FRAME = 'atlas_s5';
+const KICK_BOOST_FRAME = 'atlas_s3';
+const KICK_BOOST_MULTIPLIER = 2;
 
 const HAPTIC_KICK_MS = 40;
 const HAPTIC_FINISHER_PATTERN = [80, 40, 160];
@@ -346,15 +347,21 @@ export default class Game extends Phaser.Scene {
 
     this.envy.anims.timeScale = this.currentKickFrameRate() / KICK_INITIAL_FRAMERATE;
 
-    const onUpdate = (anim, frame) => {
-      if (!frame || frame.textureFrame !== KICK_LAUNCH_FRAME) {
+    this.launchMonkey(launchDir, vx, vy);
+    this.triggerHaptic(HAPTIC_KICK_MS);
+
+    const onBoost = (anim, frame) => {
+      if (!frame || frame.textureFrame !== KICK_BOOST_FRAME) {
         return;
       }
-      this.envy.off(Phaser.Animations.Events.ANIMATION_UPDATE, onUpdate);
-      this.launchMonkey(launchDir, vx, vy);
-      this.triggerHaptic(HAPTIC_KICK_MS);
+      this.envy.off(Phaser.Animations.Events.ANIMATION_UPDATE, onBoost);
+      this.launchMonkey(
+        launchDir,
+        vx * KICK_BOOST_MULTIPLIER,
+        vy * KICK_BOOST_MULTIPLIER
+      );
     };
-    this.envy.on(Phaser.Animations.Events.ANIMATION_UPDATE, onUpdate);
+    this.envy.on(Phaser.Animations.Events.ANIMATION_UPDATE, onBoost);
 
     this.envy.play(ENVY_KICK_ANIM);
 
